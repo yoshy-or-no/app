@@ -1,0 +1,39 @@
+{% extends 'certification/base.html' %}
+
+{% block title %}Импорт теста{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-upload"></i> Импорт теста
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="json_file" class="form-label">Выберите JSON-файл теста</label>
+                            <input type="file" class="form-control" id="json_file" name="json_file" accept=".json" required>
+                            <div class="form-text">
+                                Файл должен быть в формате JSON и содержать структуру теста с вопросами и вариантами ответов.
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-upload"></i> Импортировать
+                            </button>
+                            <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Назад
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

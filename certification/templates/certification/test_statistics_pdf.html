@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Статистика теста: {{ test.title }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2cm;
+            border-bottom: 2px solid #333;
+            padding-bottom: 1cm;
+        }
+        .header h1 {
+            font-size: 24pt;
+            margin-bottom: 0.5cm;
+        }
+        .header p {
+            font-size: 12pt;
+            color: #666;
+        }
+        .section {
+            margin-bottom: 2cm;
+        }
+        .section-title {
+            font-size: 18pt;
+            color: #2c3e50;
+            margin-bottom: 1cm;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5cm;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1cm;
+            margin-bottom: 2cm;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 1cm;
+            border-radius: 0.5cm;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24pt;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5cm;
+        }
+        .stat-label {
+            font-size: 12pt;
+            color: #666;
+        }
+        .chart-container {
+            margin-bottom: 2cm;
+            text-align: center;
+        }
+        .chart-title {
+            font-size: 14pt;
+            margin-bottom: 1cm;
+        }
+        .chart-description {
+            font-size: 10pt;
+            color: #666;
+            margin-bottom: 1cm;
+        }
+        .attempts-list {
+            margin-bottom: 2cm;
+        }
+        .attempt-item {
+            background: #f8f9fa;
+            padding: 0.5cm;
+            margin-bottom: 0.5cm;
+            border-radius: 0.3cm;
+        }
+        .attempt-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.3cm;
+        }
+        .attempt-user {
+            font-weight: bold;
+        }
+        .attempt-score {
+            font-weight: bold;
+        }
+        .attempt-details {
+            font-size: 10pt;
+            color: #666;
+        }
+        .text-success { color: #28a745; }
+        .text-warning { color: #ffc107; }
+        .text-danger { color: #dc3545; }
+        .heatmap-container {
+            margin-bottom: 2cm;
+        }
+        .heatmap-title {
+            text-align: center;
+            margin-bottom: 1cm;
+        }
+        .heatmap-description {
+            text-align: center;
+            font-size: 10pt;
+            color: #666;
+            margin-bottom: 1cm;
+        }
+        .heatmap-legend {
+            display: flex;
+            justify-content: center;
+            gap: 1cm;
+            margin-top: 1cm;
+            flex-wrap: wrap;
+        }
+        .legend-scale {
+            display: flex;
+            align-items: center;
+            gap: 0.3cm;
+        }
+        .legend-color {
+            width: 1cm;
+            height: 1cm;
+            border-radius: 0.2cm;
+        }
+        .legend-label {
+            font-size: 10pt;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 2cm;
+            padding-top: 1cm;
+            border-top: 1px solid #eee;
+            font-size: 10pt;
+            color: #666;
+        }
+        .page-break {
+            page-break-before: always;
+        }
+        .attempts-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1cm;
+        }
+        .attempts-table th {
+            background: #f8f9fa;
+            padding: 0.5cm;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .attempts-table td {
+            padding: 0.5cm;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .attempts-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Статистика теста</h1>
+        <p>Тест: "{{ test.title }}"</p>
+        <p>Дата отчета: {{ now|date:"d.m.Y H:i" }}</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ average_score|floatformat:1 }}%</div>
+            <div class="stat-label">Средний балл</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ total_attempts }}</div>
+            <div class="stat-label">Всего попыток</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ best_score|floatformat:1 }}%</div>
+            <div class="stat-label">Лучший результат</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Лучшие результаты пользователей</h2>
+        <div class="chart-container">
+            <div class="chart-title">Круговая диаграмма лучших результатов</div>
+            <div class="chart-description">Показывает лучшие результаты каждого пользователя</div>
+            <img src="data:image/png;base64,{{ best_results_chart }}" alt="Лучшие результаты" style="max-width: 100%;">
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Распределение результатов</h2>
+        <div class="chart-container">
+            <div class="chart-title">Распределение результатов по диапазонам</div>
+            <div class="chart-description">Показывает распределение результатов по диапазонам</div>
+            <img src="data:image/png;base64,{{ distribution_chart }}" alt="Распределение результатов" style="max-width: 100%;">
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Пользователи, не прошедшие тест</h2>
+        <div class="attempts-list">
+            {% if failed_users %}
+                {% for user in failed_users %}
+                <div class="attempt-item">
+                    <div class="attempt-header">
+                        <div class="attempt-user">{{ user.name }}</div>
+                        <div class="attempt-score text-danger">{{ user.last_attempt_score|floatformat:1 }}%</div>
+                    </div>
+                    <div class="attempt-details">
+                        <div>Последняя попытка: {{ user.last_attempt_date|date:"d.m.Y H:i" }}</div>
+                        <div>Всего попыток: {{ user.total_attempts }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 1cm;">
+                    <p>Все пользователи успешно прошли тест!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="section page-break">
+        <h2 class="section-title">История попыток</h2>
+        <table class="attempts-table">
+            <thead>
+                <tr>
+                    <th>Пользователь</th>
+                    <th>Дата</th>
+                    <th>Результат</th>
+                    <th>Правильных ответов</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attempt in attempts %}
+                <tr>
+                    <td>{{ attempt.user.get_full_name|default:attempt.user.username }}</td>
+                    <td>{{ attempt.completed_at|date:"d.m.Y H:i" }}</td>
+                    <td class="{% if attempt.score >= 80 %}text-success{% elif attempt.score >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                        {{ attempt.score|floatformat:1 }}%
+                    </td>
+                    <td>{{ attempt.correct_answers }} из {{ attempt.total_questions }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Активность прохождения теста</h2>
+        <div class="heatmap-container">
+            <div class="heatmap-title">Тепловая карта активности</div>
+            <div class="heatmap-description">Показывает активность прохождения теста по дням недели и неделям года</div>
+            <img src="data:image/png;base64,{{ heatmap_chart }}" alt="Тепловая карта" style="max-width: 100%;">
+            <div class="heatmap-legend">
+                <div class="legend-scale">
+                    <div class="legend-color" style="background: #ebedf0"></div>
+                    <span class="legend-label">Нет активности</span>
+                </div>
+                <div class="legend-scale">
+                    <div class="legend-color" style="background: #9be9a8"></div>
+                    <span class="legend-label">1-3 попытки</span>
+                </div>
+                <div class="legend-scale">
+                    <div class="legend-color" style="background: #40c463"></div>
+                    <span class="legend-label">4-6 попыток</span>
+                </div>
+                <div class="legend-scale">
+                    <div class="legend-color" style="background: #30a14e"></div>
+                    <span class="legend-label">7-9 попыток</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Отчет сгенерирован автоматически</p>
+        <p>© {{ now|date:"Y" }} Система тестирования</p>
+    </div>
+</body>
+</html> 

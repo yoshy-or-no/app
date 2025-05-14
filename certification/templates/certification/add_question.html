@@ -1,0 +1,784 @@
+{% extends 'certification/base.html' %}
+{% load static %}
+
+{% block title %}Добавление вопросов{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        --secondary-gradient: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+        --success-gradient: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .main-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .card:hover {
+        box-shadow: var(--card-shadow-hover);
+        transform: translateY(-2px);
+    }
+
+    .card-header {
+        background: var(--primary-gradient);
+        padding: 1.5rem;
+        border: none;
+    }
+
+    .card-header h3 {
+        color: white;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .card-header p {
+        color: rgba(255, 255, 255, 0.9);
+        margin: 0.5rem 0 0;
+    }
+
+    .form-section {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .form-section:hover {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #f3f4f6;
+    }
+
+    .section-header i {
+        font-size: 1.5rem;
+        color: #6366f1;
+        margin-right: 0.75rem;
+    }
+
+    .section-header h5 {
+        color: #1f2937;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .form-group {
+        position: relative;
+        margin-bottom: 1.25rem;
+        width: 100%;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .form-floating {
+        position: relative;
+        margin-bottom: 1.25rem;
+        width: 100%;
+    }
+
+    .form-floating > .form-control {
+        height: 3.5rem;
+        padding: 1rem 0.75rem;
+        min-height: auto;
+        background-color: #fff;
+    }
+
+    .form-floating > label {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        padding: 1rem 0.75rem;
+        pointer-events: none;
+        border: 1px solid transparent;
+        transform-origin: 0 0;
+        transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+        background-color: transparent;
+    }
+
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        transform: scale(.85) translateY(-0.5rem) translateX(0.15rem);
+        padding: 0 0.5rem;
+        color: #6366f1;
+        background-color: transparent;
+    }
+
+    .form-control {
+        display: block;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #1f2937;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .form-control:focus {
+        color: #1f2937;
+        background-color: #fff;
+        border-color: #6366f1;
+        outline: 0;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .form-select {
+        height: 3.5rem;
+        padding: 1rem 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid #e5e7eb;
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .answer-option {
+        position: relative;
+        padding: 1rem;
+        background: white;
+        border-radius: 0.75rem;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 1rem;
+        transition: all 0.2s ease;
+    }
+
+    .answer-option:hover {
+        border-color: #d1d5db;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .answer-option .remove-option {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.5rem;
+        background: #f3f4f6;
+        border: none;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .answer-option .remove-option:hover {
+        background: #ef4444;
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .answer-option .remove-option i {
+        font-size: 1.1rem;
+        transition: all 0.2s ease;
+    }
+
+    .answer-option .remove-option:hover i {
+        transform: rotate(90deg);
+    }
+
+    .answer-option .form-check {
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background: #f9fafb;
+        border-radius: 0.5rem;
+    }
+
+    .answer-option .form-check:hover {
+        background: #f3f4f6;
+    }
+
+    .answer-option .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-right: 0.5rem;
+    }
+
+    .answer-option .form-check-label {
+        font-size: 0.875rem;
+        color: #4b5563;
+    }
+
+    .add-option-btn {
+        width: 100%;
+        padding: 0.75rem;
+        background: #f9fafb;
+        border: 2px dashed #e5e7eb;
+        border-radius: 0.75rem;
+        color: #6b7280;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .add-option-btn:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+        color: #4b5563;
+    }
+
+    .add-option-btn i {
+        font-size: 1.25rem;
+    }
+
+    .form-check {
+        padding-left: 2.5rem;
+    }
+
+    .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-top: 0.25rem;
+        border: 2px solid #e5e7eb;
+        cursor: pointer;
+    }
+
+    .form-check-input:checked {
+        background-color: #6366f1;
+        border-color: #6366f1;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: var(--primary-gradient);
+        border: none;
+    }
+
+    .btn-success {
+        background: var(--success-gradient);
+        border: none;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .questions-list {
+        max-height: calc(100vh - 300px);
+        overflow-y: auto;
+        padding-right: 1rem;
+    }
+
+    .questions-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .questions-list::-webkit-scrollbar-track {
+        background: #f3f4f6;
+        border-radius: 3px;
+    }
+
+    .questions-list::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 3px;
+    }
+
+    .questions-list::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+    }
+
+    .question-item {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+
+    .question-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+    }
+
+    .bg-primary {
+        background: var(--primary-gradient);
+    }
+
+    .bg-info {
+        background: var(--secondary-gradient);
+    }
+
+    .bg-success {
+        background: var(--success-gradient);
+    }
+
+    @media (max-width: 768px) {
+        .main-container {
+            padding: 1rem;
+        }
+
+        .card-header {
+            padding: 1rem;
+        }
+
+        .form-section {
+            padding: 1rem;
+        }
+
+        .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+    }
+
+    /* Анимации */
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+
+    .slide-in {
+        animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Специальные стили для текстового поля вопроса */
+    #id_text {
+        min-height: 100px;
+        height: auto;
+        padding-top: 1.5rem;
+    }
+
+    #id_text ~ label {
+        transition: opacity 0.2s ease-in-out;
+        background-color: transparent;
+    }
+
+    #id_text:focus ~ label,
+    #id_text:not(:placeholder-shown) ~ label {
+        opacity: 0;
+    }
+
+    /* Стили для кнопки удаления вопроса */
+    .delete-question {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.5rem;
+        background: #f3f4f6;
+        border: none;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        padding: 0;
+    }
+
+    .delete-question:hover {
+        background: #ef4444;
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .delete-question i {
+        font-size: 1.1rem;
+        transition: all 0.2s ease;
+    }
+
+    .delete-question:hover i {
+        transform: rotate(90deg);
+    }
+
+    .list-group-item {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+        padding: 1.25rem;
+        transition: all 0.2s ease;
+    }
+
+    .list-group-item:hover {
+        border-color: #d1d5db;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .list-group-item h5 {
+        color: #1f2937;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .list-group-item .badge {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="card">
+        <div class="card-header">
+            <h3>Добавление вопросов к тесту: {{ test.title }}</h3>
+            <p>Добавьте вопросы для вашего теста. Вы можете создавать вопросы с множественным выбором или текстовые вопросы.</p>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" id="question-form">
+                {% csrf_token %}
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-question-circle"></i>
+                        <h5>Основная информация</h5>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Текст вопроса</label>
+                        {{ form.text }}
+                        {% if form.text.errors %}
+                            <div class="form-text text-danger">{{ form.text.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Тип вопроса</label>
+                        {{ form.question_type }}
+                        {% if form.question_type.errors %}
+                            <div class="form-text text-danger">{{ form.question_type.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Изображение (опционально)</label>
+                        {{ form.image }}
+                        {% if form.image.errors %}
+                            <div class="form-text text-danger">{{ form.image.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-section" id="text-answer-section" style="display: none;">
+                    <div class="section-header">
+                        <i class="fas fa-font"></i>
+                        <h5>Правильный ответ</h5>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Введите правильный ответ</label>
+                        {{ form.correct_answer }}
+                        {% if form.correct_answer.errors %}
+                            <div class="form-text text-danger">{{ form.correct_answer.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Добавляем секцию для синонимов -->
+                    <div class="form-group mt-4">
+                        <label class="form-label">
+                            <i class="fas fa-sync-alt me-2"></i>
+                            Синонимы
+                        </label>
+                        {{ form.answer_synonyms }}
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Укажите синонимы в формате JSON. Например:
+                            <pre class="mt-2">{
+    "сеть": "интернет",
+    "всемирная паутина": "интернет",
+    "веб": "интернет"
+}</pre>
+                        </div>
+                        {% if form.answer_synonyms.errors %}
+                            <div class="form-text text-danger">{{ form.answer_synonyms.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Добавляем секцию для аббревиатур -->
+                    <div class="form-group mt-4">
+                        <label class="form-label">
+                            <i class="fas fa-text-width me-2"></i>
+                            Аббревиатуры
+                        </label>
+                        {{ form.answer_abbreviations }}
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Укажите аббревиатуры в формате JSON. Например:
+                            <pre class="mt-2">{
+    "www": "world wide web",
+    "ip": "internet protocol",
+    "http": "hypertext transfer protocol"
+}</pre>
+                        </div>
+                        {% if form.answer_abbreviations.errors %}
+                            <div class="form-text text-danger">{{ form.answer_abbreviations.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Добавляем настройку порога схожести -->
+                    <div class="form-group mt-4">
+                        <label class="form-label">
+                            <i class="fas fa-sliders-h me-2"></i>
+                            Порог схожести
+                        </label>
+                        {{ form.similarity_threshold }}
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Установите порог схожести ответа (от 0.0 до 1.0). 
+                            Чем выше значение, тем строже проверка. 
+                            Рекомендуемое значение: 0.8
+                        </div>
+                        {% if form.similarity_threshold.errors %}
+                            <div class="form-text text-danger">{{ form.similarity_threshold.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-section" id="multiple-answer-section">
+                    <div class="section-header">
+                        <i class="fas fa-list-ul"></i>
+                        <h5>Варианты ответа</h5>
+                    </div>
+                    {{ formset.management_form }}
+                    <div id="answer-options">
+                        {% for form in formset %}
+                        <div class="answer-option" data-form-index="{{ forloop.counter0 }}">
+                            {{ form.id }}
+                            <div class="form-group">
+                                <label class="form-label">Вариант ответа</label>
+                                {{ form.text }}
+                                {% if form.text.errors %}
+                                    <div class="form-text text-danger">{{ form.text.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-check">
+                                {{ form.is_correct }}
+                                <label class="form-check-label">Правильный ответ</label>
+                            </div>
+                            {% if not forloop.first %}
+                            <button type="button" class="remove-option" title="Удалить вариант">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="add-option-btn" id="add-option">
+                        <i class="fas fa-plus"></i> Добавить вариант ответа
+                    </button>
+                </div>
+
+                <div class="form-section">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Сохранить вопрос
+                    </button>
+                    <a href="{% url 'test_detail' test.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Вернуться к тесту
+                    </a>
+                </div>
+            </form>
+
+            <div class="mt-4">
+                <h4>Добавленные вопросы</h4>
+                <div class="list-group">
+                    {% for question in questions %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">{{ question.text }}</h5>
+                                <p class="mb-1">
+                                    <span class="badge bg-primary">{{ question.get_question_type_display }}</span>
+                                    {% if question.image %}
+                                    <span class="badge bg-info">С изображением</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div>
+                                <button class="delete-question" data-question-id="{{ question.id }}" title="Удалить вопрос">
+                                    <i class="fas fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item">
+                        <p class="text-muted mb-0">Вопросы еще не добавлены</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const questionTypeSelect = document.querySelector('select[name="question_type"]');
+    const textAnswerSection = document.getElementById('text-answer-section');
+    const multipleAnswerSection = document.getElementById('multiple-answer-section');
+    const answerOptions = document.getElementById('answer-options');
+    const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+    let formCount = parseInt(totalForms.value);
+
+    // Обработчик изменения типа вопроса
+    questionTypeSelect.addEventListener('change', function() {
+        if (this.value === 'text') {
+            textAnswerSection.style.display = 'block';
+            multipleAnswerSection.style.display = 'none';
+        } else {
+            textAnswerSection.style.display = 'none';
+            multipleAnswerSection.style.display = 'block';
+        }
+    });
+
+    // Добавление нового варианта ответа
+    document.getElementById('add-option').onclick = function() {
+        const newOption = document.createElement('div');
+        newOption.className = 'answer-option';
+        newOption.innerHTML = `
+            <input type="hidden" name="form-${formCount}-DELETE" id="id_form-${formCount}-DELETE">
+            <div class="form-group">
+                <label class="form-label">Вариант ответа</label>
+                <input type="text" name="form-${formCount}-text" id="id_form-${formCount}-text" class="form-control" placeholder="Введите вариант ответа" required>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" name="form-${formCount}-is_correct" id="id_form-${formCount}-is_correct" class="form-check-input">
+                <label class="form-check-label" for="id_form-${formCount}-is_correct">Правильный ответ</label>
+            </div>
+            <button type="button" class="remove-option" title="Удалить вариант">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        answerOptions.appendChild(newOption);
+        formCount++;
+        totalForms.value = formCount;
+    };
+
+    // Удаление варианта ответа
+    answerOptions.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-option')) {
+            const option = e.target.closest('.answer-option');
+            if (answerOptions.getElementsByClassName('answer-option').length > 1) {
+                option.remove();
+                formCount--;
+                totalForms.value = formCount;
+            } else {
+                alert('Должен быть хотя бы один вариант ответа');
+            }
+        }
+    });
+
+    // Инициализация отображения секций при загрузке страницы
+    if (questionTypeSelect.value === 'text') {
+        textAnswerSection.style.display = 'block';
+        multipleAnswerSection.style.display = 'none';
+    } else {
+        textAnswerSection.style.display = 'none';
+        multipleAnswerSection.style.display = 'block';
+    }
+
+    // Удаление вопроса
+    document.querySelectorAll('.delete-question').forEach(button => {
+        button.addEventListener('click', function() {
+            if (confirm('Вы уверены, что хотите удалить этот вопрос?')) {
+                const questionId = this.dataset.questionId;
+                const questionItem = this.closest('.list-group-item');
+                
+                fetch(`/api/questions/${questionId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        questionItem.style.opacity = '0';
+                        questionItem.style.transform = 'translateX(20px)';
+                        setTimeout(() => {
+                            questionItem.remove();
+                            if (document.querySelectorAll('.list-group-item').length === 0) {
+                                const listGroup = document.querySelector('.list-group');
+                                listGroup.innerHTML = `
+                                    <div class="list-group-item">
+                                        <p class="text-muted mb-0">Вопросы еще не добавлены</p>
+                                    </div>
+                                `;
+                            }
+                        }, 300);
+                    } else {
+                        alert(data.error || 'Произошла ошибка при удалении вопроса');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Произошла ошибка при удалении вопроса');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %} 

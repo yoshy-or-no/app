@@ -1,0 +1,719 @@
+{% extends 'certification/base.html' %}
+{% load static %}
+
+{% block title %}Создание теста{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        --secondary-gradient: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+        --success-gradient: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .create-test-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .create-test-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .create-test-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        background: var(--primary-gradient);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -moz-background-clip: text;
+        -o-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        -moz-text-fill-color: transparent;
+        -o-text-fill-color: transparent;
+    }
+
+    .create-test-header p {
+        font-size: 1.1rem;
+        color: #6b7280;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .test-form {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: var(--card-shadow);
+    }
+
+    .form-section {
+        margin-bottom: 2rem;
+        background: #f9fafb;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+
+    .form-section:hover {
+        border-color: #d1d5db;
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .form-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .form-section-header i {
+        font-size: 1.5rem;
+        color: #6366f1;
+    }
+
+    .form-section-header h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        background: white;
+        height: 42px;
+    }
+
+    /* Стили для textarea */
+    textarea.form-control {
+        min-height: 84px; /* Увеличиваем высоту в 2 раза */
+        resize: vertical; /* Позволяем изменять высоту вертикально */
+        line-height: 1.5;
+        padding: 1rem;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .form-text {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.5rem;
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background: white;
+        border-radius: 0.5rem;
+        border: 1px solid #e5e7eb;
+    }
+
+    .form-check:hover {
+        border-color: #d1d5db;
+    }
+
+    .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.25rem;
+        cursor: pointer;
+    }
+
+    .form-check-label {
+        font-size: 1rem;
+        color: #374151;
+        cursor: pointer;
+    }
+
+    /* Стили для выбора пользователей */
+    .user-select-container {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .select2-container {
+        width: 100% !important;
+    }
+
+    .select2-container .select2-selection--multiple {
+        min-height: 42px;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        background-color: white;
+        transition: all 0.2s ease;
+        padding: 0.25rem;
+    }
+
+    .select2-container .select2-selection--multiple:hover {
+        border-color: #d1d5db;
+    }
+
+    .select2-container--open .select2-selection--multiple {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .select2-container .select2-selection--multiple .select2-selection__rendered {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0.25rem;
+        margin: 0;
+        min-height: 30px;
+    }
+
+    /* Empty state стили */
+    .select2-container--default .select2-selection--multiple .select2-selection__rendered:empty::before {
+        content: 'Выберите пользователей...';
+        color: #9ca3af;
+        font-size: 0.875rem;
+        padding: 0.25rem;
+        font-style: italic;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__rendered:empty {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .select2-container .select2-selection--multiple .select2-selection__choice {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: 0.375rem;
+        padding: 0.25rem 0.5rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .select2-container .select2-selection--multiple .select2-selection__choice__remove {
+        color: white;
+        margin-right: 0;
+        font-size: 1.1rem;
+        line-height: 1;
+        opacity: 0.8;
+        transition: all 0.2s ease;
+        padding: 0 0.25rem;
+    }
+
+    .select2-container .select2-selection--multiple .select2-selection__choice__remove:hover {
+        color: white;
+        opacity: 1;
+        background: none;
+    }
+
+    .select2-container .select2-search__field {
+        padding: 0.25rem;
+        border: none;
+        outline: none;
+        width: 100% !important;
+        font-size: 0.875rem;
+        color: #1f2937;
+        margin: 0;
+        min-height: 24px;
+    }
+
+    .select2-container .select2-search__field::placeholder {
+        color: #9ca3af;
+    }
+
+    .select2-dropdown {
+        border: 2px solid #e5e7eb;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        margin-top: 0.5rem;
+        overflow: hidden;
+    }
+
+    .select2-results__option {
+        padding: 0.75rem 1rem;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+        color: #1f2937;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .select2-results__option--highlighted {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .select2-results__option--selected {
+        background: #f3f4f6;
+        color: #1f2937;
+        font-weight: 500;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background: var(--primary-gradient);
+        border: none;
+        color: white;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: white;
+        margin-right: 5px;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+        color: white;
+        background: none;
+    }
+
+    /* Стили для аватаров в выпадающем списке */
+    .select2-results__option .user-avatar {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-right: 0.75rem;
+    }
+
+    .select2-results__option .user-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .select2-results__option .user-name {
+        font-weight: 500;
+        color: inherit;
+    }
+
+    .select2-results__option .user-email {
+        font-size: 0.75rem;
+        color: #6b7280;
+    }
+
+    .select2-results__option--highlighted .user-email {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .user-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .user-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: white;
+        border-radius: 0.5rem;
+        border: 1px solid #e5e7eb;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .user-item:hover {
+        border-color: #d1d5db;
+        transform: translateY(-1px);
+    }
+
+    .user-item.selected {
+        border-color: #6366f1;
+        background: rgba(99, 102, 241, 0.05);
+    }
+
+    .user-avatar {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+
+    .user-info {
+        flex: 1;
+    }
+
+    .user-name {
+        font-weight: 500;
+        color: #1f2937;
+    }
+
+    .user-email {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+        transform: translateY(-1px);
+    }
+
+    .btn i {
+        font-size: 1.25rem;
+    }
+
+    /* Анимации */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .test-form {
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .create-test-container {
+            margin: 1rem auto;
+        }
+
+        .create-test-header h1 {
+            font-size: 2rem;
+        }
+
+        .test-form {
+            padding: 1.5rem;
+        }
+
+        .form-section {
+            padding: 1rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .user-list {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Empty state для главной страницы */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: var(--card-shadow);
+        max-width: 500px;
+        margin: 2rem auto;
+        transition: all 0.3s ease;
+    }
+
+    .empty-state:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .empty-state-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        background: var(--primary-gradient);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2.5rem;
+    }
+
+    .empty-state-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state-description {
+        color: #6b7280;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        line-height: 1.5;
+    }
+
+    .empty-state-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .empty-state-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        color: white;
+    }
+
+    .empty-state-button i {
+        font-size: 1.25rem;
+    }
+
+    @media (max-width: 768px) {
+        .empty-state {
+            margin: 1rem;
+            padding: 2rem 1rem;
+        }
+
+        .empty-state-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 2rem;
+        }
+
+        .empty-state-title {
+            font-size: 1.25rem;
+        }
+
+        .empty-state-description {
+            font-size: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Создание нового теста</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">Название теста</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.title.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Описание теста</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.description.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.max_attempts.id_for_label }}" class="form-label">Количество попыток</label>
+                            {{ form.max_attempts }}
+                            <div class="form-text">Укажите максимальное количество попыток для прохождения теста</div>
+                            {% if form.max_attempts.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.max_attempts.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.time_limit.id_for_label }}" class="form-label">Время на прохождение (в минутах)</label>
+                            {{ form.time_limit }}
+                            <div class="form-text">Укажите время на прохождение теста в минутах (0 - без ограничения)</div>
+                            {% if form.time_limit.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.time_limit.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.passing_score.id_for_label }}" class="form-label">Проходной балл (%)</label>
+                            {{ form.passing_score }}
+                            <div class="form-text">Укажите минимальный процент правильных ответов для успешного прохождения теста</div>
+                            {% if form.passing_score.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.passing_score.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.difficulty_level.id_for_label }}" class="form-label">Уровень сложности</label>
+                            {{ form.difficulty_level }}
+                            {% if form.difficulty_level.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.difficulty_level.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.assigned_users.id_for_label }}" class="form-label">Назначенные пользователи</label>
+                            {{ form.assigned_users }}
+                            {% if form.assigned_users.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.assigned_users.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                    Активировать тест сразу после создания
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-2"></i>
+                                Создать тест
+                            </button>
+                            <a href="{% url 'home' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>
+                                Вернуться к списку тестов
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('.user-select').select2({
+        placeholder: 'Выберите пользователей',
+        allowClear: true,
+        language: {
+            noResults: function() {
+                return "Пользователи не найдены";
+            },
+            searching: function() {
+                return "Поиск...";
+            }
+        },
+        templateResult: formatUser,
+        templateSelection: formatUser,
+        escapeMarkup: function(markup) {
+            return markup;
+        }
+    });
+});
+
+function formatUser(user) {
+    if (!user.id) return user.text;
+    return $('<span><i class="bi bi-person"></i> ' + user.text + '</span>');
+}
+</script>
+{% endblock %}
+{% endblock %} 

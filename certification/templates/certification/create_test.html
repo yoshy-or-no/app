@@ -1,0 +1,246 @@
+{% extends 'certification/base.html' %}
+
+{% block title %}Создание теста{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-gradient bg-primary text-white py-4">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-file-earmark-plus-fill fs-2 me-3"></i>
+                        <div>
+                            <h3 class="mb-1">Создание нового теста</h3>
+                            <p class="mb-0 opacity-75">Заполните форму для создания теста</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="form-section mb-4">
+                            <div class="form-header d-flex align-items-center mb-3">
+                                <i class="bi bi-card-heading fs-4 me-2"></i>
+                                <h4 class="mb-0">Название теста</h4>
+                            </div>
+                            <div class="form-field">
+                                {{ form.title }}
+                                <div class="form-text">Введите название вашего теста</div>
+                            </div>
+                        </div>
+
+                        <div class="form-section mb-4">
+                            <div class="form-header d-flex align-items-center mb-3">
+                                <i class="bi bi-text-paragraph fs-4 me-2"></i>
+                                <h4 class="mb-0">Описание теста</h4>
+                            </div>
+                            <div class="form-field">
+                                {{ form.description }}
+                                <div class="form-text">Опишите содержание и цель теста</div>
+                            </div>
+                        </div>
+
+                        <div class="form-section mb-4">
+                            <div class="form-header d-flex align-items-center mb-3">
+                                <i class="bi bi-people fs-4 me-2"></i>
+                                <h4 class="mb-0">Пользователи</h4>
+                            </div>
+                            <div class="form-field">
+                                {{ form.assigned_users }}
+                                <div class="form-text">Выберите пользователей, которым будет доступен тест</div>
+                            </div>
+                        </div>
+
+                        <div class="form-section mb-4">
+                            <div class="form-header d-flex align-items-center mb-3">
+                                <i class="bi bi-toggle-on fs-4 me-2"></i>
+                                <h4 class="mb-0">Статус теста</h4>
+                            </div>
+                            <div class="form-field">
+                                <div class="form-check form-switch">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Активный тест</label>
+                                </div>
+                                <div class="form-text">Активные тесты доступны для прохождения</div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions d-flex gap-3 mt-5">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="bi bi-plus-circle me-2"></i>Создать тест
+                            </button>
+                            <a href="{% url 'home' %}" class="btn btn-secondary flex-grow-1">
+                                <i class="bi bi-x-circle me-2"></i>Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        background: #fff;
+    }
+    
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+        padding: 1.5rem;
+    }
+    
+    .bg-gradient {
+        background: linear-gradient(45deg, #0d6efd, #0dcaf0);
+    }
+
+    .card-body {
+        background: #f8f9fa;
+    }
+
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .form-section:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+
+    .form-header {
+        color: #495057;
+        margin-bottom: 1rem;
+    }
+
+    .form-header h4 {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #212529;
+    }
+
+    .form-header i {
+        color: #0d6efd;
+    }
+
+    .form-field {
+        width: 100%;
+    }
+
+    .form-control {
+        width: 100%;
+        border: 1px solid #dee2e6;
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        outline: none;
+    }
+
+    .form-control::placeholder {
+        color: #adb5bd;
+    }
+
+    .form-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        padding-left: 0.5rem;
+    }
+
+    .form-actions {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .btn {
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .btn-primary {
+        background: linear-gradient(45deg, #0d6efd, #0dcaf0);
+        border: none;
+    }
+
+    .btn-secondary {
+        background: #e9ecef;
+        border: none;
+        color: #495057;
+    }
+
+    .btn-secondary:hover {
+        background: #dee2e6;
+    }
+
+    /* Стили для Bootstrap Select */
+    .bootstrap-select {
+        width: 100% !important;
+    }
+
+    .bootstrap-select .dropdown-toggle {
+        background-color: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+
+    /* Стили для чекбокса */
+    .form-check-input {
+        width: 3em;
+        height: 1.5em;
+        margin-top: 0.25em;
+    }
+
+    .form-check-label {
+        margin-left: 0.5em;
+    }
+</style>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.selectpicker').selectpicker();
+    });
+</script>
+{% endblock %}
+{% endblock %} 

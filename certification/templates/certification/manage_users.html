@@ -1,0 +1,561 @@
+{% extends 'certification/base.html' %}
+
+{% block title %}Управление пользователями{% endblock %}
+
+{% block extra_head %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        --secondary-gradient: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+        --success-gradient: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .main-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .page-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+    }
+
+    .page-header h2 {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        position: relative;
+    }
+
+    .page-header p {
+        opacity: 0.9;
+        margin-bottom: 0;
+        position: relative;
+    }
+
+    .user-form {
+        background: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    .user-form:hover {
+        box-shadow: var(--card-shadow-hover);
+        transform: translateY(-2px);
+    }
+
+    .user-form h3 {
+        color: #1e293b;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .user-form h3 i {
+        color: #6366f1;
+    }
+
+    .user-list {
+        background: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: var(--card-shadow);
+    }
+
+    .user-list h3 {
+        color: #1e293b;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .user-list h3 i {
+        color: #6366f1;
+    }
+
+    .user-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+
+    .user-item:hover {
+        background: #f8fafc;
+    }
+
+    .user-item:last-child {
+        border-bottom: none;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .user-avatar {
+        width: 48px;
+        height: 48px;
+        background: var(--primary-gradient);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .user-details h5 {
+        margin: 0;
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    .user-details p {
+        margin: 0;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #1e293b;
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .alert i {
+        font-size: 1.25rem;
+    }
+
+    .alert-success {
+        background: rgba(34, 197, 94, 0.1);
+        color: #16a34a;
+        border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+
+    .alert-danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .form-text {
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        color: #64748b;
+    }
+
+    .invalid-feedback {
+        color: #dc2626;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .invalid-feedback i {
+        font-size: 1rem;
+    }
+
+    .form-control.is-invalid {
+        border-color: #dc2626;
+    }
+
+    .form-control.is-invalid:focus {
+        border-color: #dc2626;
+        box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.25);
+    }
+
+    .list-unstyled {
+        margin-top: 0.5rem;
+        padding-left: 1rem;
+    }
+
+    .list-unstyled li {
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .list-unstyled li i {
+        color: #6366f1;
+        font-size: 0.875rem;
+    }
+
+    @media (max-width: 768px) {
+        .main-container {
+            padding: 1rem;
+        }
+
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .user-form, .user-list {
+            padding: 1.5rem;
+        }
+    }
+
+    .user-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+
+    .btn-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        max-width: 500px;
+        margin: 2rem auto;
+        box-shadow: var(--card-shadow);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .modal-body {
+        margin-bottom: 1.5rem;
+        color: #64748b;
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
+
+    .btn-secondary:hover {
+        background: #cbd5e1;
+    }
+
+    .password-form {
+        margin-top: 1rem;
+    }
+
+    .password-form .form-group {
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="page-header">
+        <h2><i class="bi bi-people"></i> Управление пользователями</h2>
+        <p>Создавайте новых пользователей и управляйте существующими</p>
+    </div>
+
+    <div class="user-form">
+        <h3><i class="bi bi-person-plus"></i> Создать нового пользователя</h3>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_username">Имя пользователя</label>
+                {{ form.username }}
+                <small class="form-text">Только буквы, цифры и символы @/./+/-/_.</small>
+                {% if form.username.errors %}
+                    <div class="invalid-feedback">
+                        <i class="bi bi-exclamation-circle"></i>
+                        {% for error in form.username.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="id_password1">Пароль</label>
+                {{ form.password1 }}
+                <small class="form-text">
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check2"></i> Минимум 8 символов</li>
+                        <li><i class="bi bi-check2"></i> Не должен быть похож на имя пользователя</li>
+                        <li><i class="bi bi-check2"></i> Не должен быть простым</li>
+                        <li><i class="bi bi-check2"></i> Должен содержать цифры и буквы</li>
+                    </ul>
+                </small>
+                {% if form.password1.errors %}
+                    <div class="invalid-feedback">
+                        <i class="bi bi-exclamation-circle"></i>
+                        {% for error in form.password1.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="id_password2">Подтверждение пароля</label>
+                {{ form.password2 }}
+                <small class="form-text">Введите тот же пароль, что и выше, для подтверждения.</small>
+                {% if form.password2.errors %}
+                    <div class="invalid-feedback">
+                        <i class="bi bi-exclamation-circle"></i>
+                        {% for error in form.password2.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-person-plus"></i> Создать пользователя
+            </button>
+        </form>
+    </div>
+
+    <div class="user-list">
+        <h3><i class="bi bi-people"></i> Список пользователей</h3>
+        {% for user in users %}
+            <div class="user-item">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="user-details">
+                        <h5>{{ user.username }}</h5>
+                        <p>Зарегистрирован: {{ user.date_joined|date:"d.m.Y H:i" }}</p>
+                    </div>
+                </div>
+                <div class="user-actions">
+                    <form method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <input type="hidden" name="toggle_staff" value="1">
+                        <button type="submit" class="btn {% if user.is_staff %}btn-success{% else %}btn-outline-success{% endif %}" title="{% if user.is_staff %}Снять права администратора{% else %}Назначить администратором{% endif %}">
+                            <i class="bi bi-shield-check"></i> {% if user.is_staff %}Администратор{% else %}Пользователь{% endif %}
+                        </button>
+                    </form>
+                    <button type="button" class="btn btn-warning" onclick="showChangePasswordModal('{{ user.id }}', '{{ user.username }}')">
+                        <i class="bi bi-key"></i> Изменить пароль
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ user.id }}', '{{ user.username }}')">
+                        <i class="bi bi-trash"></i> Удалить
+                    </button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Модальное окно изменения пароля -->
+<div id="changePasswordModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Изменение пароля</h5>
+            <button type="button" class="btn btn-secondary" onclick="closePasswordModal()">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Введите новый пароль для пользователя <span id="usernameToChangePassword"></span></p>
+            <form method="post" class="password-form">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" id="userIdToChangePassword">
+                <input type="hidden" name="change_password" value="1">
+                <div class="form-group">
+                    <label for="new_password1">Новый пароль</label>
+                    <input type="password" name="new_password1" id="new_password1" class="form-control" required>
+                    <small class="form-text">
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check2"></i> Минимум 8 символов</li>
+                            <li><i class="bi bi-check2"></i> Не должен быть похож на имя пользователя</li>
+                            <li><i class="bi bi-check2"></i> Не должен быть простым</li>
+                            <li><i class="bi bi-check2"></i> Должен содержать цифры и буквы</li>
+                        </ul>
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="new_password2">Подтверждение пароля</label>
+                    <input type="password" name="new_password2" id="new_password2" class="form-control" required>
+                    <small class="form-text">Введите тот же пароль, что и выше, для подтверждения.</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closePasswordModal()">Отмена</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-key"></i> Изменить пароль
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Подтверждение удаления</h5>
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            Вы уверены, что хотите удалить пользователя <span id="usernameToDelete"></span>?
+            Это действие нельзя будет отменить.
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+            <form method="post" style="display: inline;">
+                {% csrf_token %}
+                <input type="hidden" name="delete_user" id="userIdToDelete">
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Удалить
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(userId, username) {
+    document.getElementById('deleteModal').style.display = 'block';
+    document.getElementById('usernameToDelete').textContent = username;
+    document.getElementById('userIdToDelete').value = userId;
+}
+
+function closeModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+function showChangePasswordModal(userId, username) {
+    document.getElementById('changePasswordModal').style.display = 'block';
+    document.getElementById('usernameToChangePassword').textContent = username;
+    document.getElementById('userIdToChangePassword').value = userId;
+}
+
+function closePasswordModal() {
+    document.getElementById('changePasswordModal').style.display = 'none';
+    // Очищаем поля формы
+    document.getElementById('new_password1').value = '';
+    document.getElementById('new_password2').value = '';
+}
+
+// Закрытие модальных окон при клике вне них
+window.onclick = function(event) {
+    const deleteModal = document.getElementById('deleteModal');
+    const passwordModal = document.getElementById('changePasswordModal');
+    if (event.target == deleteModal) {
+        closeModal();
+    }
+    if (event.target == passwordModal) {
+        closePasswordModal();
+    }
+}
+</script>
+{% endblock %} 

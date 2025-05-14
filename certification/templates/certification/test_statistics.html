@@ -1,0 +1,1547 @@
+{% extends 'certification/base.html' %}
+
+{% block title %}Статистика теста{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix"></script>
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        --secondary-gradient: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+        --success-gradient: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .main-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .header-card {
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+    }
+
+    .header-card h1 {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .header-card p {
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 1.1rem;
+    }
+
+    .chart-container {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+    }
+
+    .chart-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 1rem;
+    }
+
+    .attempts-list {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+    }
+
+    .attempt-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+
+    .attempt-item:last-child {
+        border-bottom: none;
+    }
+
+    .attempt-item:hover {
+        background: #f8fafc;
+    }
+
+    .attempt-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .attempt-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .attempt-user {
+        font-weight: 600;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .attempt-score {
+        font-weight: 600;
+        font-size: 1.2rem;
+    }
+
+    .text-success {
+        color: #16a34a;
+    }
+
+    .text-warning {
+        color: #d97706;
+    }
+
+    .text-danger {
+        color: #dc2626;
+    }
+
+    .attempt-details {
+        display: flex;
+        gap: 1.5rem;
+        color: #64748b;
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+    }
+
+    .attempt-details i {
+        margin-right: 0.25rem;
+    }
+
+    .attempt-answers {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .attempt-answers i {
+        color: #16a34a;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: var(--primary-gradient);
+        border: none;
+        color: white;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+        .main-container {
+            padding: 1rem;
+        }
+
+        .header-card {
+            padding: 1.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .chart-wrapper {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    .chart-title h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    .chart-description {
+        color: #64748b;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .chart-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e2e8f0;
+        justify-content: center;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #f8fafc;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+
+    .legend-label {
+        color: #1e293b;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    #scoreDistributionChart {
+        margin: 1rem auto;
+    }
+
+    .modal-content {
+        border-radius: 1rem;
+        border: none;
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .modal-header {
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: 1rem 1rem 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .question-item {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        background: #f8fafc;
+    }
+
+    .question-text {
+        font-weight: 500;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+
+    .answer-option {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        margin-bottom: 0.25rem;
+        border-radius: 0.25rem;
+    }
+
+    .answer-option.correct {
+        background: rgba(34, 197, 94, 0.1);
+        border-left: 3px solid #16a34a;
+    }
+
+    .answer-option.incorrect {
+        background: rgba(239, 68, 68, 0.1);
+        border-left: 3px solid #dc2626;
+    }
+
+    .answer-option.selected {
+        font-weight: 500;
+    }
+
+    .answer-icon {
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .answer-icon.correct {
+        background: #16a34a;
+        color: white;
+    }
+
+    .answer-icon.incorrect {
+        background: #dc2626;
+        color: white;
+    }
+
+    .answer-icon.selected {
+        background: #2196f3;
+        color: white;
+    }
+
+    .heatmap-container {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+    }
+
+    .heatmap-title {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .heatmap-title h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+
+    .heatmap-description {
+        color: #64748b;
+        font-size: 1rem;
+    }
+
+    .heatmap-wrapper {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    .heatmap-header {
+        margin-bottom: 0.5rem;
+    }
+
+    .heatmap-months {
+        display: flex;
+        justify-content: flex-end;
+        padding-left: 40px;
+        color: #64748b;
+        font-size: 0.75rem;
+    }
+
+    .heatmap-content {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .heatmap-days {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        color: #64748b;
+        font-size: 0.75rem;
+        text-align: right;
+        padding-right: 0.5rem;
+    }
+
+    .heatmap-matrix {
+        display: grid;
+        grid-template-columns: repeat(52, 1fr);
+        gap: 2px;
+        padding: 0.5rem;
+        background: #f6f8fa;
+        border-radius: 0.5rem;
+        flex-grow: 1;
+    }
+
+    .heatmap-cell {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .heatmap-cell:hover {
+        transform: scale(1.5);
+        z-index: 1;
+        box-shadow: 0 0 0 2px white;
+    }
+
+    .heatmap-tooltip {
+        position: absolute;
+        background: #24292e;
+        color: white;
+        padding: 0.75rem;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+        pointer-events: none;
+        z-index: 2;
+        white-space: nowrap;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .heatmap-tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 5px;
+        border-style: solid;
+        border-color: #24292e transparent transparent transparent;
+    }
+
+    .heatmap-legend {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .legend-scale {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #f8fafc;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.375rem;
+    }
+
+    .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+    }
+
+    .legend-label {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+
+    @media (max-width: 768px) {
+        .heatmap-wrapper {
+            padding: 0.5rem;
+        }
+
+        .heatmap-matrix {
+            gap: 1px;
+        }
+
+        .heatmap-cell {
+            width: 8px;
+            height: 8px;
+        }
+
+        .heatmap-legend {
+            gap: 0.5rem;
+        }
+
+        .legend-scale {
+            padding: 0.25rem 0.5rem;
+        }
+    }
+
+    .heatmap-filters {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding: 0 1rem;
+    }
+
+    .period-selector {
+        display: flex;
+        gap: 0.5rem;
+        background: #f8fafc;
+        padding: 0.25rem;
+        border-radius: 0.5rem;
+    }
+
+    .period-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        background: none;
+        color: #64748b;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: 0.375rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .period-btn:hover {
+        color: #1e293b;
+        background: #f1f5f9;
+    }
+
+    .period-btn.active {
+        background: white;
+        color: #1e293b;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .date-selector {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .date-nav-btn {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: #f8fafc;
+        color: #64748b;
+        border-radius: 0.375rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .date-nav-btn:hover {
+        background: #f1f5f9;
+        color: #1e293b;
+    }
+
+    .current-period {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #1e293b;
+        min-width: 100px;
+        text-align: center;
+    }
+
+    @media (max-width: 768px) {
+        .heatmap-filters {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .period-selector {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .date-selector {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    .user-filter {
+        max-width: 900px;
+        margin: 0 auto 1.5rem;
+        padding: 0 1rem;
+    }
+
+    .search-container {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        color: #1e293b;
+        background: white;
+        transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        margin-top: 0.5rem;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 10;
+        display: none;
+    }
+
+    .search-result-item {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .search-result-item:hover {
+        background: #f8fafc;
+    }
+
+    .selected-users {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .selected-user {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #f1f5f9;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        color: #1e293b;
+    }
+
+    .remove-user {
+        cursor: pointer;
+        color: #64748b;
+        transition: color 0.2s ease;
+    }
+
+    .remove-user:hover {
+        color: #ef4444;
+    }
+
+    .no-results {
+        padding: 0.75rem 1rem;
+        color: #64748b;
+        font-size: 0.875rem;
+        text-align: center;
+    }
+
+    .questions-list {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .question-item {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .question-text {
+        font-weight: 500;
+        margin-bottom: 10px;
+        color: #2c3e50;
+    }
+
+    .option-item {
+        padding: 8px 12px;
+        margin: 5px 0;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .option-item.selected {
+        background: #e3f2fd;
+    }
+
+    .option-item.correct {
+        background: #e8f5e9;
+    }
+
+    .option-item.incorrect {
+        background: #ffebee;
+    }
+
+    .option-icon {
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .option-icon.correct {
+        background: #4caf50;
+        color: white;
+    }
+
+    .option-icon.selected {
+        background: #2196f3;
+        color: white;
+    }
+
+    .option-icon.incorrect {
+        background: #f44336;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="header-card fade-in" style="animation-delay: 0.1s">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1>{{ test.title }}</h1>
+                <p>Статистика прохождения теста</p>
+            </div>
+            <a href="{% url 'export_test_statistics_pdf' test.id %}" class="btn btn-primary">
+                <i class="fas fa-file-pdf"></i> Экспорт в PDF
+            </a>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card fade-in" style="animation-delay: 0.2s">
+            <div class="stat-value">{{ average_score|floatformat:1 }}%</div>
+            <div class="stat-label">Средний балл</div>
+        </div>
+        <div class="stat-card fade-in" style="animation-delay: 0.3s">
+            <div class="stat-value">{{ total_attempts }}</div>
+            <div class="stat-label">Всего попыток</div>
+        </div>
+        <div class="stat-card fade-in" style="animation-delay: 0.4s">
+            <div class="stat-value">{{ best_score|floatformat:1 }}%</div>
+            <div class="stat-label">Лучший результат</div>
+        </div>
+    </div>
+
+    <!-- Объединенный блок с диаграммами -->
+    <div class="chart-container fade-in" style="animation-delay: 0.5s">
+        <div class="chart-title">
+            <h3>Результаты тестирования</h3>
+            <p class="chart-description">Анализ результатов прохождения теста</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="chart-wrapper p-4 bg-white rounded shadow-sm">
+                    <h5 class="text-center mb-3" style="font-size: 1.1rem; min-height: 2.5rem; display: flex; align-items: center; justify-content: center;">Лучшие результаты</h5>
+                    <canvas id="bestResultsChart"></canvas>
+                    <div class="chart-description mt-3">
+                        <p class="text-muted small">
+                            <i class="bi bi-info-circle"></i>
+                            Круговая диаграмма показывает лучший результат каждого пользователя. 
+                            Размер сегмента соответствует проценту правильных ответов. 
+                            Это позволяет быстро оценить успешность прохождения теста каждым участником.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-wrapper p-4 bg-white rounded shadow-sm">
+                    <h5 class="text-center mb-3" style="font-size: 1.1rem; min-height: 2.5rem; display: flex; align-items: center; justify-content: center;">Распределение результатов</h5>
+                    <canvas id="distributionChart"></canvas>
+                    <div class="chart-description mt-3">
+                        <p class="text-muted small">
+                            <i class="bi bi-info-circle"></i>
+                            Диаграмма показывает распределение всех попыток по диапазонам результатов. 
+                            Цветовая кодировка помогает оценить общий уровень успешности: 
+                            зеленый - высокие результаты, желтый - средние, красный - низкие.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список пользователей, не прошедших тест -->
+    <div class="chart-container fade-in" style="animation-delay: 0.6s">
+        <div class="chart-title">
+            <h3>Пользователи, не прошедшие тест</h3>
+            <p class="chart-description">Список пользователей, которые не достигли проходного балла ({{ test.passing_score }}%)</p>
+        </div>
+        <div class="attempts-list">
+            {% if failed_users %}
+                {% for user in failed_users %}
+                <div class="attempt-item">
+                    <div class="attempt-info">
+                        <div class="attempt-header">
+                            <div class="attempt-user">
+                                <i class="bi bi-person-circle"></i>
+                                {{ user.name }}
+                            </div>
+                            <div class="attempt-score text-danger">
+                                {{ user.last_attempt_score|floatformat:1 }}%
+                            </div>
+                        </div>
+                        <div class="attempt-details">
+                            <div class="attempt-date">
+                                <i class="bi bi-calendar"></i>
+                                Последняя попытка: {{ user.last_attempt_date|date:"d.m.Y H:i" }}
+                            </div>
+                            <div class="attempt-answers">
+                                <i class="bi bi-arrow-repeat"></i>
+                                Всего попыток: {{ user.total_attempts }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center text-muted p-4">
+                    <i class="bi bi-check-circle-fill fs-1"></i>
+                    <p class="mt-2">Все пользователи успешно прошли тест!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Тепловая карта активности -->
+    <div class="heatmap-container fade-in" style="animation-delay: 0.5s">
+        <div class="heatmap-title">
+            <h3>Активность прохождения теста</h3>
+            <p class="heatmap-description">Матрица активности показывает, в какие дни недели и недели года пользователи проходили тест</p>
+        </div>
+
+        <!-- Фильтр пользователей -->
+        <div class="user-filter">
+            <div class="search-container">
+                <input type="text" id="userSearch" class="search-input" placeholder="Поиск пользователя...">
+                <div class="search-results" id="searchResults"></div>
+            </div>
+            <div class="selected-users" id="selectedUsers"></div>
+        </div>
+
+        <div class="heatmap-wrapper">
+            <div class="heatmap-header">
+                <div class="heatmap-months"></div>
+            </div>
+            <div class="heatmap-content">
+                <div class="heatmap-days"></div>
+                <div class="heatmap-matrix" id="activityHeatmap"></div>
+            </div>
+        </div>
+        <div class="heatmap-legend">
+            <div class="legend-scale">
+                <div class="legend-color" style="background: #ebedf0"></div>
+                <span class="legend-label">Нет активности</span>
+            </div>
+            <div class="legend-scale">
+                <div class="legend-color" style="background: #9be9a8"></div>
+                <span class="legend-label">1-3 попытки</span>
+            </div>
+            <div class="legend-scale">
+                <div class="legend-color" style="background: #40c463"></div>
+                <span class="legend-label">4-6 попыток</span>
+            </div>
+            <div class="legend-scale">
+                <div class="legend-color" style="background: #30a14e"></div>
+                <span class="legend-label">7-9 попыток</span>
+            </div>
+            <div class="legend-scale">
+                <div class="legend-color" style="background: #216e39"></div>
+                <span class="legend-label">10+ попыток</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="attempts-list fade-in" style="animation-delay: 0.7s">
+        <div class="chart-title">История попыток</div>
+        
+        <!-- Фильтр пользователей для истории попыток -->
+        <div class="user-filter">
+            <div class="search-container">
+                <input type="text" id="attemptsUserSearch" class="search-input" placeholder="Поиск пользователя...">
+                <div class="search-results" id="attemptsSearchResults"></div>
+            </div>
+            <div class="selected-users" id="attemptsSelectedUsers"></div>
+        </div>
+
+        <div id="attemptsList">
+            {% for attempt in attempts %}
+            <div class="attempt-item" data-user-id="{{ attempt.user.id }}">
+                <div class="attempt-info">
+                    <div class="attempt-header">
+                        <div class="attempt-user">
+                            <i class="bi bi-person-circle"></i>
+                            {{ attempt.user.get_full_name|default:attempt.user.username }}
+                        </div>
+                        <div class="attempt-score {% if attempt.score >= 80 %}text-success{% elif attempt.score >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                            {{ attempt.score|floatformat:1 }}%
+                        </div>
+                    </div>
+                    <div class="attempt-details">
+                        <div class="attempt-date">
+                            <i class="bi bi-calendar"></i>
+                            {{ attempt.completed_at|date:"d.m.Y H:i" }}
+                        </div>
+                        <div class="attempt-answers">
+                            <i class="bi bi-check-circle"></i>
+                            Правильных ответов: {{ attempt.correct_answers }} из {{ attempt.total_questions }}
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="showAttemptDetails({{ attempt.id }})">
+                    <i class="bi bi-eye"></i> Подробнее
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Модальное окно с деталями попытки -->
+    <div class="modal fade" id="attemptDetailsModal" tabindex="-1" aria-labelledby="attemptDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="attemptDetailsModalLabel">Детали попытки</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="attempt-info mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-2"><strong>Пользователь:</strong> <span id="attemptUser"></span></p>
+                                <p class="mb-2"><strong>Дата:</strong> <span id="attemptDate"></span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-2"><strong>Результат:</strong> <span id="attemptScore"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="attemptQuestions" class="questions-list">
+                        <!-- Здесь будут отображаться вопросы и ответы -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-grid gap-3 mt-4">
+        <a href="{% url 'home' %}" class="btn btn-primary">
+            <i class="bi bi-house-door"></i> Вернуться на главную
+        </a>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Создаем диаграмму лучших результатов
+    const bestResultsCtx = document.getElementById('bestResultsChart');
+    if (bestResultsCtx) {
+        new Chart(bestResultsCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ pie_chart_data.labels|safe }},
+                datasets: [{
+                    data: {{ pie_chart_data.data|safe }},
+                    backgroundColor: {{ pie_chart_data.colors|safe }},
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.raw}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Создаем диаграмму распределения результатов
+    const distributionCtx = document.getElementById('distributionChart');
+    if (distributionCtx) {
+        const distributionData = {{ distribution_data|safe }};
+        new Chart(distributionCtx, {
+            type: 'pie',
+            data: {
+                labels: distributionData.map(item => item.range),
+                datasets: [{
+                    data: distributionData.map(item => item.count),
+                    backgroundColor: [
+                        'rgba(239, 68, 68, 0.7)',   // red
+                        'rgba(245, 158, 11, 0.7)',  // amber
+                        'rgba(234, 179, 8, 0.7)',   // yellow
+                        'rgba(34, 197, 94, 0.7)',   // green
+                        'rgba(16, 185, 129, 0.7)'   // emerald
+                    ],
+                    borderColor: [
+                        'rgb(239, 68, 68)',
+                        'rgb(245, 158, 11)',
+                        'rgb(234, 179, 8)',
+                        'rgb(34, 197, 94)',
+                        'rgb(16, 185, 129)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.raw / total) * 100).toFixed(1);
+                                return `${context.label}: ${context.raw} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Создаем тепловую карту активности
+    const heatmapContainer = document.getElementById('activityHeatmap');
+    if (heatmapContainer) {
+        const heatmapData = {{ heatmap_data|safe }};
+        const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+        const months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+        
+        // Добавляем подписи дней недели
+        const daysContainer = document.querySelector('.heatmap-days');
+        days.forEach(day => {
+            const dayLabel = document.createElement('div');
+            dayLabel.textContent = day;
+            daysContainer.appendChild(dayLabel);
+        });
+
+        // Добавляем подписи месяцев
+        const monthsContainer = document.querySelector('.heatmap-months');
+        const today = new Date();
+        const startDate = new Date(today);
+        startDate.setDate(today.getDate() - 364); // 52 недели назад
+
+        let currentMonth = startDate.getMonth();
+        let monthSpans = [];
+
+        for (let i = 0; i < 52; i++) {
+            const date = new Date(startDate);
+            date.setDate(startDate.getDate() + i * 7);
+            
+            if (date.getMonth() !== currentMonth) {
+                const monthSpan = document.createElement('span');
+                monthSpan.textContent = months[currentMonth];
+                monthSpan.style.marginRight = `${i * 12 - (monthSpans.length * 52 * 12 / 12)}px`;
+                monthsContainer.appendChild(monthSpan);
+                monthSpans.push(monthSpan);
+                currentMonth = date.getMonth();
+            }
+        }
+
+        // Создаем ячейки матрицы
+        heatmapData.data.forEach((weekData, dayIndex) => {
+            weekData.forEach((value, weekIndex) => {
+                const cell = document.createElement('div');
+                cell.className = 'heatmap-cell';
+                
+                // Определяем цвет в зависимости от значения
+                let color;
+                if (value === 0) {
+                    color = '#ebedf0';
+                } else if (value <= 3) {
+                    color = '#9be9a8';
+                } else if (value <= 6) {
+                    color = '#40c463';
+                } else if (value <= 9) {
+                    color = '#30a14e';
+                } else {
+                    color = '#216e39';
+                }
+                
+                cell.style.backgroundColor = color;
+                
+                // Добавляем всплывающую подсказку
+                cell.addEventListener('mousemove', (e) => {
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'heatmap-tooltip';
+                    
+                    const date = new Date(today);
+                    date.setDate(today.getDate() - (51 - weekIndex) * 7);
+                    const dayOfWeek = days[dayIndex];
+                    const month = months[date.getMonth()];
+                    const day = date.getDate();
+                    
+                    tooltip.innerHTML = `
+                        <strong>${dayOfWeek}, ${day} ${month}</strong><br>
+                        ${value} ${value === 1 ? 'попытка' : value < 5 ? 'попытки' : 'попыток'}
+                    `;
+                    
+                    const tooltipRect = tooltip.getBoundingClientRect();
+                    
+                    let left = e.pageX + 10;
+                    let top = e.pageY + 10;
+                    
+                    if (left + tooltipRect.width > window.innerWidth) {
+                        left = e.pageX - tooltipRect.width - 10;
+                    }
+                    if (top + tooltipRect.height > window.innerHeight) {
+                        top = e.pageY - tooltipRect.height - 10;
+                    }
+                    
+                    tooltip.style.left = left + 'px';
+                    tooltip.style.top = top + 'px';
+                    
+                    document.body.appendChild(tooltip);
+                    
+                    cell.addEventListener('mouseleave', () => {
+                        tooltip.remove();
+                    }, { once: true });
+                });
+                
+                heatmapContainer.appendChild(cell);
+            });
+        });
+    }
+
+    // Добавляем функционал поиска пользователей
+    const userSearch = document.getElementById('userSearch');
+    const searchResults = document.getElementById('searchResults');
+    const selectedUsers = document.getElementById('selectedUsers');
+    let selectedUserIds = new Set();
+
+    // Получаем список пользователей из данных
+    const users = {{ users|safe }};
+
+    userSearch.addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        if (query.length < 2) {
+            searchResults.style.display = 'none';
+            return;
+        }
+
+        const filteredUsers = users.filter(user => 
+            user.name.toLowerCase().includes(query) && 
+            !selectedUserIds.has(user.id)
+        );
+
+        if (filteredUsers.length > 0) {
+            searchResults.innerHTML = filteredUsers.map(user => `
+                <div class="search-result-item" data-user-id="${user.id}">
+                    ${user.name}
+                </div>
+            `).join('');
+            searchResults.style.display = 'block';
+        } else {
+            searchResults.innerHTML = '<div class="no-results">Пользователи не найдены</div>';
+            searchResults.style.display = 'block';
+        }
+    });
+
+    // Обработчик клика по результатам поиска
+    searchResults.addEventListener('click', function(e) {
+        const resultItem = e.target.closest('.search-result-item');
+        if (!resultItem) return;
+
+        const userId = parseInt(resultItem.dataset.userId);
+        const userName = resultItem.textContent.trim();
+        
+        if (!selectedUserIds.has(userId)) {
+            selectedUserIds.add(userId);
+            updateSelectedUsers();
+            updateHeatmap();
+        }
+
+        userSearch.value = '';
+        searchResults.style.display = 'none';
+    });
+
+    function updateSelectedUsers() {
+        selectedUsers.innerHTML = Array.from(selectedUserIds).map(userId => {
+            const user = users.find(u => u.id === userId);
+            return `
+                <div class="selected-user">
+                    <span>${user.name}</span>
+                    <span class="remove-user" data-user-id="${userId}">×</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    selectedUsers.addEventListener('click', function(e) {
+        const removeButton = e.target.closest('.remove-user');
+        if (!removeButton) return;
+
+        const userId = parseInt(removeButton.dataset.userId);
+        selectedUserIds.delete(userId);
+        updateSelectedUsers();
+        updateHeatmap();
+    });
+
+    function updateHeatmap() {
+        const heatmapContainer = document.getElementById('activityHeatmap');
+        if (!heatmapContainer) return;
+
+        // Очищаем контейнер
+        heatmapContainer.innerHTML = '';
+        
+        // Получаем данные для выбранных пользователей
+        const heatmapData = {{ heatmap_data|safe }};
+        const filteredData = selectedUserIds.size > 0 
+            ? filterHeatmapData(heatmapData, Array.from(selectedUserIds))
+            : heatmapData;
+
+        // Создаем ячейки матрицы с отфильтрованными данными
+        filteredData.data.forEach((weekData, dayIndex) => {
+            weekData.forEach((value, weekIndex) => {
+                const cell = document.createElement('div');
+                cell.className = 'heatmap-cell';
+                
+                // Определяем цвет в зависимости от значения
+                let color;
+                if (value === 0) {
+                    color = '#ebedf0';
+                } else if (value <= 3) {
+                    color = '#9be9a8';
+                } else if (value <= 6) {
+                    color = '#40c463';
+                } else if (value <= 9) {
+                    color = '#30a14e';
+                } else {
+                    color = '#216e39';
+                }
+                
+                cell.style.backgroundColor = color;
+                
+                // Добавляем всплывающую подсказку
+                cell.addEventListener('mousemove', (e) => {
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'heatmap-tooltip';
+                    
+                    const date = new Date();
+                    date.setDate(date.getDate() - (51 - weekIndex) * 7);
+                    const dayOfWeek = days[dayIndex];
+                    const month = months[date.getMonth()];
+                    const day = date.getDate();
+                    
+                    tooltip.innerHTML = `
+                        <strong>${dayOfWeek}, ${day} ${month}</strong><br>
+                        ${value} ${value === 1 ? 'попытка' : value < 5 ? 'попытки' : 'попыток'}
+                    `;
+                    
+                    const tooltipRect = tooltip.getBoundingClientRect();
+                    
+                    let left = e.pageX + 10;
+                    let top = e.pageY + 10;
+                    
+                    if (left + tooltipRect.width > window.innerWidth) {
+                        left = e.pageX - tooltipRect.width - 10;
+                    }
+                    if (top + tooltipRect.height > window.innerHeight) {
+                        top = e.pageY - tooltipRect.height - 10;
+                    }
+                    
+                    tooltip.style.left = left + 'px';
+                    tooltip.style.top = top + 'px';
+                    
+                    document.body.appendChild(tooltip);
+                    
+                    cell.addEventListener('mouseleave', () => {
+                        tooltip.remove();
+                    }, { once: true });
+                });
+                
+                heatmapContainer.appendChild(cell);
+            });
+        });
+    }
+
+    // Закрываем результаты поиска при клике вне
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-container')) {
+            searchResults.style.display = 'none';
+        }
+    });
+
+    // Инициализация тепловой карты
+    updateHeatmap();
+
+    // Функция для фильтрации данных тепловой карты по выбранным пользователям
+    function filterHeatmapData(heatmapData, selectedUserIds) {
+        // Получаем все попытки для выбранных пользователей
+        const attempts = {{ attempts_data|safe }};
+        const filteredAttempts = attempts.filter(attempt => 
+            selectedUserIds.includes(attempt.user_id)
+        );
+
+        // Создаем новую матрицу данных
+        const filteredData = {
+            data: Array(7).fill().map(() => Array(52).fill(0)),
+            max_value: 0
+        };
+
+        // Получаем дату 52 недели назад
+        const end_date = new Date();
+        const start_date = new Date(end_date);
+        start_date.setDate(end_date.getDate() - 364);
+
+        // Заполняем матрицу отфильтрованными данными
+        filteredAttempts.forEach(attempt => {
+            if (attempt.completed_at) {
+                const attemptDate = new Date(attempt.completed_at);
+                if (attemptDate >= start_date) {
+                    const day_of_week = attemptDate.getDay() || 7; // Преобразуем 0 (воскресенье) в 7
+                    const week_number = Math.floor((end_date - attemptDate) / (7 * 24 * 60 * 60 * 1000));
+                    
+                    if (week_number >= 0 && week_number < 52) {
+                        filteredData.data[day_of_week - 1][week_number]++;
+                        filteredData.max_value = Math.max(
+                            filteredData.max_value,
+                            filteredData.data[day_of_week - 1][week_number]
+                        );
+                    }
+                }
+            }
+        });
+
+        return filteredData;
+    }
+
+    // Добавляем функционал поиска пользователей для истории попыток
+    const attemptsUserSearch = document.getElementById('attemptsUserSearch');
+    const attemptsSearchResults = document.getElementById('attemptsSearchResults');
+    const attemptsSelectedUsers = document.getElementById('attemptsSelectedUsers');
+    let attemptsSelectedUserIds = new Set();
+
+    attemptsUserSearch.addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        if (query.length < 2) {
+            attemptsSearchResults.style.display = 'none';
+            return;
+        }
+
+        const filteredUsers = users.filter(user => 
+            user.name.toLowerCase().includes(query) && 
+            !attemptsSelectedUserIds.has(user.id)
+        );
+
+        if (filteredUsers.length > 0) {
+            attemptsSearchResults.innerHTML = filteredUsers.map(user => `
+                <div class="search-result-item" data-user-id="${user.id}">
+                    ${user.name}
+                </div>
+            `).join('');
+            attemptsSearchResults.style.display = 'block';
+        } else {
+            attemptsSearchResults.innerHTML = '<div class="no-results">Пользователи не найдены</div>';
+            attemptsSearchResults.style.display = 'block';
+        }
+    });
+
+    attemptsSearchResults.addEventListener('click', function(e) {
+        const resultItem = e.target.closest('.search-result-item');
+        if (!resultItem) return;
+
+        const userId = parseInt(resultItem.dataset.userId);
+        const userName = resultItem.textContent.trim();
+        
+        if (!attemptsSelectedUserIds.has(userId)) {
+            attemptsSelectedUserIds.add(userId);
+            updateAttemptsSelectedUsers();
+            updateAttemptsList();
+        }
+
+        attemptsUserSearch.value = '';
+        attemptsSearchResults.style.display = 'none';
+    });
+
+    function updateAttemptsSelectedUsers() {
+        attemptsSelectedUsers.innerHTML = Array.from(attemptsSelectedUserIds).map(userId => {
+            const user = users.find(u => u.id === userId);
+            return `
+                <div class="selected-user">
+                    <span>${user.name}</span>
+                    <span class="remove-user" data-user-id="${userId}">×</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    attemptsSelectedUsers.addEventListener('click', function(e) {
+        const removeButton = e.target.closest('.remove-user');
+        if (!removeButton) return;
+
+        const userId = parseInt(removeButton.dataset.userId);
+        attemptsSelectedUserIds.delete(userId);
+        updateAttemptsSelectedUsers();
+        updateAttemptsList();
+    });
+
+    function updateAttemptsList() {
+        const attemptsList = document.getElementById('attemptsList');
+        const attemptItems = attemptsList.getElementsByClassName('attempt-item');
+
+        Array.from(attemptItems).forEach(item => {
+            const userId = parseInt(item.dataset.userId);
+            if (attemptsSelectedUserIds.size === 0 || attemptsSelectedUserIds.has(userId)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    // Закрываем результаты поиска при клике вне
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-container')) {
+            searchResults.style.display = 'none';
+            attemptsSearchResults.style.display = 'none';
+        }
+    });
+});
+
+function showAttemptDetails(attemptId) {
+    fetch(`/test/{{ test.id }}/attempt/${attemptId}/details/`)
+        .then(response => response.json())
+        .then(data => {
+            // Обновляем информацию о попытке
+            document.getElementById('attemptUser').textContent = data.user;
+            document.getElementById('attemptDate').textContent = data.completed_at;
+            document.getElementById('attemptScore').textContent = `${data.score}%`;
+            
+            // Очищаем и заполняем список вопросов
+            const questionsContainer = document.getElementById('attemptQuestions');
+            questionsContainer.innerHTML = '';
+            
+            data.questions.forEach((question, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.className = 'question-item';
+                
+                // Добавляем текст вопроса
+                const questionText = document.createElement('div');
+                questionText.className = 'question-text';
+                questionText.textContent = `${index + 1}. ${question.text}`;
+                questionElement.appendChild(questionText);
+                
+                // Добавляем варианты ответов
+                question.options.forEach(option => {
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'option-item';
+                    if (option.selected) optionElement.classList.add('selected');
+                    if (option.is_correct) optionElement.classList.add('correct');
+                    if (option.selected && !option.is_correct) optionElement.classList.add('incorrect');
+                    
+                    // Добавляем иконку статуса
+                    const iconElement = document.createElement('div');
+                    iconElement.className = 'option-icon';
+                    if (option.selected) {
+                        iconElement.classList.add('selected');
+                        iconElement.innerHTML = '✓';
+                    } else if (option.is_correct) {
+                        iconElement.classList.add('correct');
+                        iconElement.innerHTML = '✓';
+                    }
+                    
+                    // Добавляем текст варианта
+                    const optionText = document.createElement('span');
+                    optionText.textContent = option.text;
+                    
+                    optionElement.appendChild(iconElement);
+                    optionElement.appendChild(optionText);
+                    questionElement.appendChild(optionElement);
+                });
+                
+                questionsContainer.appendChild(questionElement);
+            });
+            
+            // Показываем модальное окно
+            const modal = new bootstrap.Modal(document.getElementById('attemptDetailsModal'));
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Error loading attempt details:', error);
+            alert('Произошла ошибка при загрузке деталей попытки');
+        });
+}
+</script>
+{% endblock %} 

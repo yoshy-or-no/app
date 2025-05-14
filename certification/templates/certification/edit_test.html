@@ -1,0 +1,1055 @@
+{% extends 'certification/base.html' %}
+
+{% block title %}Редактирование теста{% endblock %}
+
+{% block content %}
+<!-- Добавляем Font Awesome в head -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+    /* Стили для кнопок удаления */
+    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove {
+        color: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 12px !important;
+        line-height: 1 !important;
+        font-weight: normal !important;
+        border: none !important;
+        background: #ff3b30 !important;
+        cursor: pointer !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 16px !important;
+        height: 16px !important;
+        border-radius: 50% !important;
+        position: relative !important;
+        top: 0 !important;
+        left: 0 !important;
+        transform: none !important;
+        text-decoration: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+        order: 2 !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove:hover {
+        background: #ff3b30 !important;
+        color: white !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove::before,
+    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove::after {
+        display: none !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove * {
+        display: none !important;
+    }
+
+    /* Переопределение стилей Select2 */
+    .select2-container {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection {
+        min-height: 45px !important;
+        border: 1px solid #dee2e6 !important;
+        border-radius: 12px !important;
+        background: white !important;
+        padding: 4px !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection:hover {
+        border-color: #86b7fe !important;
+        box-shadow: 0 2px 4px rgba(13, 110, 253, 0.1) !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--multiple {
+        padding: 2px !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 4px !important;
+        padding: 2px !important;
+        margin: 0 !important;
+        align-items: flex-start !important;
+        min-height: 32px !important;
+        box-sizing: border-box !important;
+        order: 1 !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
+        background: #0d6efd !important;
+        border: none !important;
+        border-radius: 6px !important;
+        color: white !important;
+        padding: 2px 8px !important;
+        margin: 2px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+        position: relative !important;
+        gap: 4px !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__display {
+        order: 1 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-search--inline {
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        align-items: center !important;
+        width: 100% !important;
+        order: 2 !important;
+        border-top: 1px solid #dee2e6 !important;
+        margin-top: 4px !important;
+        padding-top: 4px !important;
+        min-height: 32px !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-search--inline .select2-search__field {
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 32px !important;
+        box-sizing: border-box !important;
+        line-height: 32px !important;
+        width: 100% !important;
+        font-size: 14px !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__placeholder {
+        color: #6c757d !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 24px !important;
+    }
+
+    .select2-dropdown {
+        border: 1px solid #dee2e6 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-results__option {
+        padding: 8px 12px !important;
+        margin: 0 !important;
+        color: #212529 !important;
+        transition: all 0.2s ease !important;
+        box-sizing: border-box !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-results__option--highlighted {
+        background: #e9ecef !important;
+        color: #212529 !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-results__option--selected {
+        background: #0d6efd !important;
+        color: white !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-results__option:first-child {
+        border-top-left-radius: 12px !important;
+        border-top-right-radius: 12px !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-results__option:last-child {
+        border-bottom-left-radius: 12px !important;
+        border-bottom-right-radius: 12px !important;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Основная информация о тесте -->
+        <div class="col-md-6">
+            <div class="card shadow-lg">
+                <div class="card-header bg-gradient bg-primary text-white py-4">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-pencil-square fs-2 me-3"></i>
+                        <div>
+                            <h3 class="mb-1">Основная информация</h3>
+                            <p class="mb-0 opacity-75">Измените параметры теста</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-section mb-4">
+                            <div class="form-header d-flex align-items-center mb-3">
+                                <i class="bi bi-card-heading fs-4 me-2"></i>
+                                <h4 class="mb-0">Название теста</h4>
+                            </div>
+                            <div class="form-field">
+                                {{ form.title }}
+                                <div class="form-text">Введите название вашего теста</div>
+                            </div>
+                        </div>
+
+                        <div class="form-section mb-4">
+                            <div class="form-header d-flex align-items-center mb-3">
+                                <i class="bi bi-text-paragraph fs-4 me-2"></i>
+                                <h4 class="mb-0">Описание теста</h4>
+                            </div>
+                            <div class="form-field">
+                                {{ form.description }}
+                                <div class="form-text">Опишите содержание и цель теста</div>
+                            </div>
+                        </div>
+
+                        <div class="form-section mb-4">
+                            <div class="form-header d-flex align-items-center mb-3">
+                                <i class="bi bi-clock fs-4 me-2"></i>
+                                <h4 class="mb-0">Время на выполнение</h4>
+                            </div>
+                            <div class="form-field">
+                                {{ form.time_limit }}
+                                <div class="form-text">Укажите время на выполнение теста в минутах (0 - без ограничения)</div>
+                            </div>
+                        </div>
+
+                        <div class="form-section mb-4">
+                            <div class="form-header d-flex align-items-center mb-3">
+                                <i class="bi bi-repeat fs-4 me-2"></i>
+                                <h4 class="mb-0">Количество попыток</h4>
+                            </div>
+                            <div class="form-field">
+                                {{ form.max_attempts }}
+                                <div class="form-text">Максимальное количество попыток для прохождения теста</div>
+                            </div>
+                        </div>
+
+                        <div class="form-section mb-4">
+                            <div class="form-header d-flex align-items-center mb-3">
+                                <i class="bi bi-check-circle fs-4 me-2"></i>
+                                <h4 class="mb-0">Проходной балл</h4>
+                            </div>
+                            <div class="form-field">
+                                {{ form.passing_score }}
+                                <div class="form-text">Минимальный процент правильных ответов для успешного прохождения теста</div>
+                            </div>
+                        </div>
+
+                        <div class="form-section mb-4">
+                            <div class="form-header d-flex align-items-center mb-3">
+                                <i class="bi bi-bar-chart fs-4 me-2"></i>
+                                <h4 class="mb-0">Уровень сложности</h4>
+                            </div>
+                            <div class="form-field">
+                                {{ form.difficulty_level }}
+                                <div class="form-text">Выберите уровень сложности теста</div>
+                            </div>
+                        </div>
+
+                        <div class="form-section mb-4">
+                            <div class="form-header d-flex align-items-center mb-3">
+                                <i class="bi bi-people fs-4 me-2"></i>
+                                <h4 class="mb-0">Доступ пользователям</h4>
+                            </div>
+                            <div class="form-field">
+                                <div class="user-select-container">
+                                    <select name="{{ form.assigned_users.name }}" id="{{ form.assigned_users.id_for_label }}" class="form-control" multiple="multiple">
+                                        {% for user in form.assigned_users.field.queryset %}
+                                            <option value="{{ user.id }}" {% if user.id in form.assigned_users.value %}selected="selected"{% endif %}>
+                                                {{ user.get_full_name|default:user.username }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-text">Выберите пользователей, которым будет доступен тест. Для поиска введите имя пользователя.</div>
+                            </div>
+                        </div>
+
+                        <div class="form-section mb-4">
+                            <div class="form-header d-flex align-items-center mb-3">
+                                <i class="bi bi-toggle-on fs-4 me-2"></i>
+                                <h4 class="mb-0">Статус теста</h4>
+                            </div>
+                            <div class="form-field">
+                                <div class="form-check">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                        Тест активен
+                                    </label>
+                                </div>
+                                <div class="form-text">Активные тесты доступны для прохождения</div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions d-flex gap-3 mt-5">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="bi bi-save me-2"></i>Сохранить изменения
+                            </button>
+                            <a href="{% url 'test_detail' test.id %}" class="btn btn-secondary flex-grow-1">
+                                <i class="bi bi-x-circle me-2"></i>Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Список вопросов -->
+        <div class="col-md-6">
+            <div class="card shadow-lg">
+                <div class="card-header bg-gradient bg-primary text-white py-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-question-circle fs-2 me-3"></i>
+                            <div>
+                                <h3 class="mb-1">Вопросы теста</h3>
+                                <p class="mb-0 opacity-75">Управление вопросами теста</p>
+                            </div>
+                        </div>
+                        <a href="{% url 'add_question' test.id %}" class="btn btn-light">
+                            <i class="bi bi-plus-circle me-2"></i>Добавить вопрос
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="questions-list" id="sortable-questions">
+                        {% for question in test.questions.all %}
+                        <div class="question-item card mb-3" data-id="{{ question.id }}">
+                            <div class="card-body">
+                                <div class="drag-handle">⋮⋮</div>
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h3 class="h6 mb-2">{{ question.text|truncatechars:100 }}</h3>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-outline-secondary preview-question" data-id="{{ question.id }}" title="Предпросмотр">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary copy-question" data-id="{{ question.id }}" title="Копировать">
+                                            <i class="bi bi-files"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger delete-question" data-id="{{ question.id }}" title="Удалить">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="text-muted small">
+                                    <span class="badge {% if question.question_type == 'text' %}bg-info{% else %}bg-primary{% endif %}">
+                                        {% if question.question_type == 'text' %}Текстовый{% else %}С вариантами{% endif %}
+                                    </span>
+                                    {% if question.question_type == 'multiple' %}
+                                    <span class="ms-2">{{ question.options.count }} вариантов</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="empty-placeholder">
+                            <i class="bi bi-question-circle display-4 text-muted"></i>
+                            <p class="mt-2">В тесте пока нет вопросов</p>
+                            <a href="{% url 'add_question' test.id %}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Добавить первый вопрос
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для предпросмотра вопроса -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Предпросмотр вопроса</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center preview-loading d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <p class="mt-2">Загрузка вопроса...</p>
+                </div>
+                <div class="preview-content"></div>
+                <div class="preview-error d-none">
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Произошла ошибка при загрузке вопроса. Пожалуйста, попробуйте еще раз.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        background: #fff;
+    }
+    
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+        padding: 1.5rem;
+    }
+    
+    .bg-gradient {
+        background: linear-gradient(45deg, #0d6efd, #0dcaf0);
+    }
+
+    .card-body {
+        background: #f8f9fa;
+    }
+
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .form-section:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+
+    .form-header {
+        color: #495057;
+        margin-bottom: 1rem;
+    }
+
+    .form-header h4 {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #212529;
+    }
+
+    .form-header i {
+        color: #0d6efd;
+    }
+
+    .form-field {
+        width: 100%;
+    }
+
+    .form-control {
+        width: 100%;
+        border: 1px solid #dee2e6;
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        outline: none;
+    }
+
+    .form-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+
+    .form-check {
+        padding-left: 2rem;
+    }
+
+    .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-left: -2rem;
+    }
+
+    .form-check-label {
+        font-size: 1rem;
+        color: #212529;
+    }
+
+    .btn {
+        padding: 0.875rem 1.75rem;
+        font-size: 1rem;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(45deg, #0d6efd, #0dcaf0);
+        border: none;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        border: none;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(108, 117, 125, 0.2);
+    }
+
+    .select2-container--bootstrap-5 .select2-selection {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 0.5rem;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
+        background: #e9ecef;
+        border: none;
+        border-radius: 4px;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .question-item {
+        cursor: default;
+        transition: all 0.2s ease;
+        position: relative;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #dee2e6;
+    }
+
+    .question-item .drag-handle {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #adb5bd;
+        font-size: 20px;
+        cursor: grab;
+        padding: 10px 5px;
+    }
+
+    .question-item .drag-handle:active {
+        cursor: grabbing;
+    }
+
+    .question-item:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .question-item .card-body {
+        padding-left: 40px;
+        background: white;
+    }
+
+    .question-item.sortable-ghost {
+        opacity: 0.4;
+        background: #f8f9fa;
+    }
+
+    .question-item.sortable-drag {
+        cursor: grabbing;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .empty-placeholder {
+        border: 2px dashed #dee2e6;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        text-align: center;
+        color: #6c757d;
+        margin: 1rem 0;
+    }
+
+    .btn-group .btn {
+        position: relative;
+        z-index: 1;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: none !important;
+    }
+
+    .btn-group .btn:focus,
+    .btn-group .btn:active,
+    .btn-group .btn:hover {
+        width: 32px;
+        height: 32px;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    .btn-group .btn i {
+        font-size: 1rem;
+        line-height: 1;
+    }
+
+    .modal {
+        z-index: 1050;
+    }
+    .modal-backdrop {
+        z-index: 1040;
+    }
+
+    @media (max-width: 768px) {
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+    }
+
+    .user-select-container {
+        width: 100%;
+    }
+
+    .user-select-container .select2-container {
+        width: 100% !important;
+    }
+
+    .user-select-container .select2-container--bootstrap-5 .select2-selection {
+        min-height: 45px;
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        padding: 0.5rem;
+        background: white;
+        transition: all 0.2s ease;
+    }
+
+    .user-select-container .select2-container--bootstrap-5 .select2-selection:hover {
+        border-color: #86b7fe;
+        box-shadow: 0 2px 4px rgba(13, 110, 253, 0.1);
+    }
+
+    .user-select-container .select2-container--bootstrap-5.select2-container--focus .select2-selection {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+
+    .user-select-container .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        padding: 0.25rem;
+        margin: 0;
+    }
+
+    .user-select-container .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
+        background: #0d6efd;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        padding: 2px 8px;
+        margin: 0;
+        display: inline-flex;
+        align-items: center;
+        font-size: 14px;
+        line-height: 1.5;
+        position: relative;
+    }
+
+    .user-select-container .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove {
+        color: #ff3b30 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 12px !important;
+        line-height: 1 !important;
+        font-weight: normal !important;
+        border: none !important;
+        background: #ff3b30 !important;
+        cursor: pointer !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 16px !important;
+        height: 16px !important;
+        border-radius: 50% !important;
+        position: relative !important;
+        top: 0 !important;
+        left: 0 !important;
+        transform: none !important;
+        text-decoration: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+        order: 2 !important;
+    }
+
+    .user-select-container .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove:hover {
+        background: #ff3b30 !important;
+        color: white !important;
+    }
+
+    .user-select-container .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove::before,
+    .user-select-container .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove::after {
+        display: none !important;
+    }
+
+    .user-select-container .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove * {
+        display: none !important;
+    }
+
+    .user-select-container .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__clear {
+        color: #ff3b30;
+        margin-right: 5px;
+        padding: 0;
+        font-size: 14px;
+        line-height: 1;
+        font-weight: bold;
+        border: none;
+        background: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 14px;
+        height: 14px;
+        position: relative;
+        top: 0;
+        transform: translateY(0);
+    }
+
+    .user-select-container .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__clear:hover {
+        color: #ff3b30 !important;
+        background: rgba(255, 59, 48, 0.1) !important;
+        border-radius: 50% !important;
+    }
+
+    .select2-dropdown {
+        border: 1px solid #dee2e6 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    }
+
+    .select2-container--bootstrap-5 .select2-results__option {
+        padding: 8px 12px;
+        color: #212529;
+        transition: all 0.2s ease;
+    }
+
+    .select2-container--bootstrap-5 .select2-results__option--highlighted {
+        background: #e9ecef;
+        color: #212529;
+    }
+
+    .select2-container--bootstrap-5 .select2-results__option--selected {
+        background: #0d6efd;
+        color: white;
+    }
+
+    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__display {
+        order: 1;
+        margin-right: 2px;
+        padding-right: 2px;
+    }
+
+    .select2-container--bootstrap-5 .select2-search--inline .select2-search__field {
+        margin-top: 4px;
+        margin-left: 4px;
+    }
+</style>
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация сортировки
+    new Sortable(document.getElementById('sortable-questions'), {
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        dragClass: 'sortable-drag',
+        handle: '.drag-handle',  // Обновленный селектор для захвата
+        onEnd: function(evt) {
+            const questions = Array.from(evt.to.children).map((item, index) => ({
+                id: item.dataset.id,
+                order: index + 1
+            }));
+            
+            fetch('/api/questions/reorder/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ questions })
+            });
+        }
+    });
+
+    // Обработчики кнопок
+    document.querySelectorAll('.preview-question').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const questionId = this.dataset.id;
+            const modal = document.getElementById('previewModal');
+            
+            // Удаляем старый backdrop если он остался
+            const oldBackdrop = document.querySelector('.modal-backdrop');
+            if (oldBackdrop) {
+                oldBackdrop.remove();
+            }
+            
+            // Удаляем класс modal-open с body если он остался
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            
+            const modalInstance = new bootstrap.Modal(modal, {
+                backdrop: true,
+                keyboard: true,
+                focus: true
+            });
+            
+            // Сбрасываем состояние кнопки
+            this.blur();
+            
+            // Показываем индикатор загрузки
+            modal.querySelector('.preview-loading').classList.remove('d-none');
+            modal.querySelector('.preview-content').innerHTML = '';
+            modal.querySelector('.preview-error').classList.add('d-none');
+            
+            // Показываем модальное окно
+            modalInstance.show();
+            
+            // Загружаем предпросмотр
+            fetch(`/api/questions/${questionId}/preview/`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    modal.querySelector('.preview-content').innerHTML = data.html;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    modal.querySelector('.preview-error').classList.remove('d-none');
+                })
+                .finally(() => {
+                    modal.querySelector('.preview-loading').classList.add('d-none');
+                });
+        });
+    });
+
+    // Добавляем обработчик для корректного закрытия модального окна
+    const previewModal = document.getElementById('previewModal');
+    previewModal.addEventListener('hidden.bs.modal', function () {
+        // Очищаем содержимое при закрытии
+        this.querySelector('.preview-content').innerHTML = '';
+        this.querySelector('.preview-loading').classList.add('d-none');
+        this.querySelector('.preview-error').classList.add('d-none');
+        
+        // Удаляем backdrop
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.remove();
+        }
+        
+        // Очищаем стили body
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+    });
+
+    document.querySelectorAll('.copy-question').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Проверяем, не обрабатывается ли уже запрос
+            if (this.dataset.processing === 'true') {
+                return;
+            }
+            
+            const questionId = this.dataset.id;
+            const button = this;
+            
+            try {
+                // Устанавливаем флаг обработки
+                button.dataset.processing = 'true';
+                button.disabled = true;
+                
+                const response = await fetch(`/api/questions/${questionId}/copy/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    throw new Error(data.error || 'Ошибка при копировании вопроса');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Произошла ошибка при копировании вопроса');
+                button.disabled = false;
+                button.dataset.processing = 'false';
+            }
+        });
+    });
+
+    document.querySelectorAll('.delete-question').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Проверяем, не обрабатывается ли уже запрос
+            if (this.dataset.processing === 'true') {
+                return;
+            }
+            
+            const questionId = this.dataset.id;
+            const button = this;
+            
+            // Запрашиваем подтверждение удаления
+            if (!confirm('Вы уверены, что хотите удалить этот вопрос?')) {
+                return;
+            }
+            
+            try {
+                // Устанавливаем флаг обработки
+                button.dataset.processing = 'true';
+                button.disabled = true;
+                
+                const response = await fetch(`/api/questions/${questionId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    throw new Error(data.error || 'Ошибка при удалении вопроса');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Произошла ошибка при удалении вопроса');
+                button.disabled = false;
+                button.dataset.processing = 'false';
+            }
+        });
+    });
+
+    // Инициализация Select2
+    const select = $('#{{ form.assigned_users.id_for_label }}');
+    
+    select.select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Пользователи, которым доступен тест',
+        allowClear: true,
+        width: '100%',
+        language: {
+            noResults: function() {
+                return 'Пользователи не найдены';
+            },
+            searching: function() {
+                return 'Поиск...';
+            }
+        }
+    });
+
+    // Функция для обновления стилей кнопок удаления
+    function updateRemoveButtons() {
+        $('.select2-selection__choice__remove').each(function() {
+            $(this).empty();
+            $(this).find('*').remove();
+            $(this).css({
+                'background': '#ff3b30',
+                'color': 'white',
+                'border': 'none',
+                'padding': '0',
+                'margin': '0',
+                'width': '16px',
+                'height': '16px',
+                'border-radius': '50%',
+                'display': 'inline-flex',
+                'align-items': 'center',
+                'justify-content': 'center',
+                'font-size': '12px',
+                'line-height': '1',
+                'order': '2'
+            });
+        });
+    }
+
+    // Обновляем стили при открытии выпадающего списка
+    select.on('select2:open', function() {
+        setTimeout(updateRemoveButtons, 0);
+    });
+
+    // Обновляем стили при изменении выбора
+    select.on('change', function() {
+        setTimeout(updateRemoveButtons, 0);
+    });
+
+    // Обновляем стили при инициализации
+    setTimeout(updateRemoveButtons, 0);
+
+    // Добавляем обработчик для динамического обновления
+    select.on('select2:select select2:unselect', function() {
+        setTimeout(updateRemoveButtons, 0);
+    });
+});
+</script>
+{% endblock %}
+{% endblock %} 

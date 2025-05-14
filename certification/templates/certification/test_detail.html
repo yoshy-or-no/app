@@ -1,0 +1,1759 @@
+{% extends 'certification/base.html' %}
+{% load custom_tags %}
+
+{% block title %}{{ test.title }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Основные стили */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        --secondary-gradient: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+        --success-gradient: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .test-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .test-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+        pointer-events: none;
+    }
+
+    .test-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .test-title {
+        flex: 1;
+    }
+
+    .test-title h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .test-title p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+
+    .test-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: rgba(255,255,255,0.1);
+        border-radius: 0.5rem;
+        backdrop-filter: blur(5px);
+    }
+
+    .info-item i {
+        font-size: 1.25rem;
+    }
+
+    .question-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .question-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+    }
+
+    .question-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .question-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .question-number {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .question-type {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+    }
+
+    .question-text {
+        font-size: 1.1rem;
+        color: #1f2937;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .question-image {
+        margin-bottom: 1.5rem;
+    }
+
+    .question-image img {
+        max-width: 100%;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+    .question-image img:hover {
+        transform: scale(1.02);
+    }
+
+    .answer-options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .answer-option {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .answer-option:hover {
+        border-color: #d1d5db;
+        background: #f9fafb;
+    }
+
+    .answer-option input[type="checkbox"] {
+        width: 1.25rem;
+        height: 1.25rem;
+        cursor: pointer;
+    }
+
+    .answer-option label {
+        flex: 1;
+        cursor: pointer;
+        margin-bottom: 0;
+    }
+
+    .text-answer-container {
+        margin-top: 1rem;
+    }
+
+    .text-answer {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+
+    .text-answer:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+    }
+
+    .test-actions {
+        position: sticky;
+        bottom: 20px;
+        background: white;
+        padding: 0.75rem 1rem;
+        border-radius: 0.75rem;
+        box-shadow: var(--card-shadow);
+        margin: 1.5rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        z-index: 100;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    @media (max-width: 768px) {
+        .test-actions {
+            bottom: 10px;
+            padding: 0.5rem;
+            gap: 0.5rem;
+            margin: 1rem 0.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .test-actions .timer {
+            min-width: 80px;
+            padding: 0.4rem 0.6rem;
+            font-size: 0.9rem;
+        }
+
+        .test-actions .btn {
+            padding: 0.4rem 0.6rem;
+            font-size: 0.85rem;
+            min-width: 36px;
+            justify-content: center;
+        }
+
+        .test-actions .btn i {
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .test-actions .btn span {
+            display: none;
+        }
+    }
+
+    /* Модальное окно для просмотра изображения */
+    .image-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .image-modal.active {
+        display: flex;
+    }
+
+    .modal-content {
+        max-width: 90%;
+        max-height: 90vh;
+        position: relative;
+    }
+
+    .modal-content img {
+        max-width: 100%;
+        max-height: 90vh;
+        object-fit: contain;
+    }
+
+    .close-modal {
+        position: absolute;
+        top: -40px;
+        right: 0;
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+    }
+
+    .close-modal:hover {
+        color: #6366f1;
+    }
+
+    /* Стили для drag-and-drop */
+    .question-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .question-item {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        cursor: move;
+        position: relative;
+        border: 1px solid #e5e7eb;
+    }
+
+    .question-item.dragging {
+        opacity: 0.5;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        transform: scale(1.02);
+    }
+
+    .question-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+        border-color: #d1d5db;
+    }
+
+    .question-item .question-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .question-item .question-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .question-item .question-number {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .question-item .question-type {
+        font-size: 0.875rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        background: #f3f4f6;
+        color: #4b5563;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .question-item .question-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .question-item .question-actions button {
+        background: none;
+        border: none;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    .question-item .question-actions button:hover {
+        background: #f3f4f6;
+        color: #4b5563;
+        transform: scale(1.1);
+    }
+
+    .question-item .question-content {
+        margin-top: 1rem;
+    }
+
+    .question-item .question-text {
+        font-size: 1.125rem;
+        color: #1f2937;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+    }
+
+    .question-item .question-options {
+        margin-top: 1rem;
+        padding-left: 1rem;
+        border-left: 2px solid #e5e7eb;
+    }
+
+    .question-item .question-option {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        color: #4b5563;
+    }
+
+    .question-item .question-option i {
+        font-size: 0.875rem;
+    }
+
+    .question-item .question-option i.text-success {
+        color: #22c55e;
+    }
+
+    .question-item .question-option i:not(.text-success) {
+        color: #9ca3af;
+    }
+
+    /* Анимация при перетаскивании */
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+    }
+
+    .question-item.dragging {
+        animation: pulse 1s infinite;
+    }
+
+    /* Стили для предварительного просмотра */
+    .preview-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .preview-modal.active {
+        display: flex;
+    }
+
+    .preview-content {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        max-width: 800px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+    }
+
+    .preview-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #6b7280;
+    }
+
+    .preview-close:hover {
+        color: #4b5563;
+    }
+
+    /* Стили для кнопок действий */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .btn-icon {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        background: #f3f4f6;
+        border: none;
+        color: #4b5563;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-icon:hover {
+        background: #e5e7eb;
+        color: #1f2937;
+    }
+
+    .btn-icon i {
+        font-size: 1.25rem;
+    }
+
+    .btn-view {
+        background: var(--secondary-gradient);
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-view:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-view i {
+        font-size: 1.25rem;
+    }
+
+    /* Стили для админской части */
+    .admin-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .admin-actions .btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .admin-actions .btn-warning {
+        background: var(--warning-gradient);
+        color: white;
+    }
+
+    .admin-actions .btn-warning:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .admin-actions .btn-success {
+        background: var(--success-gradient);
+        color: white;
+    }
+
+    .admin-actions .btn-success:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .admin-actions .btn-danger {
+        background: var(--danger-gradient);
+        color: white;
+    }
+
+    .admin-actions .btn-danger:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .admin-actions .btn i {
+        font-size: 1.25rem;
+    }
+
+    /* Стили для пользовательской части */
+    .user-actions {
+        position: sticky;
+        bottom: 2rem;
+        background: white;
+        padding: 1rem;
+        border-radius: 1rem;
+        box-shadow: var(--card-shadow);
+        margin-top: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .user-actions .progress-container {
+        flex: 1;
+        margin-right: 1rem;
+    }
+
+    .user-actions .progress {
+        height: 0.5rem;
+        background: #f3f4f6;
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+
+    .user-actions .progress-bar {
+        background: var(--primary-gradient);
+        transition: width 0.3s ease;
+    }
+
+    /* Общие стили для вопросов */
+    .question-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+    }
+
+    .question-card:hover {
+        box-shadow: var(--card-shadow-hover);
+        transform: translateY(-2px);
+    }
+
+    /* Стили для кнопок */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5c636a;
+        transform: translateY(-1px);
+    }
+
+    .btn i {
+        font-size: 1.25rem;
+    }
+
+    /* Адаптивные стили */
+    @media (max-width: 768px) {
+        .test-header {
+            padding: 1.5rem;
+        }
+
+        .test-title h1 {
+            font-size: 1.5rem;
+        }
+
+        .test-info {
+            grid-template-columns: 1fr;
+        }
+
+        .user-actions {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .user-actions .progress-container {
+            width: 100%;
+            margin-right: 0;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* Всплывающее окно для добавления вопросов */
+    .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .popup-container {
+        background: white;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .popup-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .popup-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #212529;
+    }
+
+    .popup-close {
+        background: none;
+        border: none;
+        font-size: 1.25rem;
+        color: #6c757d;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+
+    .popup-close:hover {
+        background: #f8f9fa;
+        color: #212529;
+    }
+
+    .popup-content {
+        padding: 1.5rem;
+    }
+
+    .popup-footer {
+        padding: 1.5rem;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+
+    /* Анимации */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Стили для формы */
+    .form-section {
+        background: #fff;
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .form-section:hover {
+        border-color: #dee2e6;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.75rem;
+        display: block;
+    }
+
+    .form-control, .form-select {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        outline: none;
+    }
+
+    /* Стили для загрузки файла */
+    .file-upload {
+        position: relative;
+        overflow: hidden;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .file-upload:hover {
+        border-color: #adb5bd;
+        background: #f8f9fa;
+    }
+
+    .file-upload input[type="file"] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+    }
+
+    .file-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .file-info i {
+        font-size: 2rem;
+        color: #6c757d;
+    }
+
+    .file-info span {
+        color: #6c757d;
+        font-size: 1rem;
+    }
+
+    /* Стили для вариантов ответа */
+    .option-item {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .option-item:hover {
+        background: #fff;
+        border-color: #dee2e6;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .option-item .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-top: 0.25rem;
+    }
+
+    .option-item .btn-remove-option {
+        color: #dc3545;
+        padding: 0.5rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .option-item .btn-remove-option:hover {
+        background: #f8d7da;
+    }
+
+    /* Кнопки */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: #0d6efd;
+        border: none;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #0b5ed7;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        border: none;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5c636a;
+        transform: translateY(-1px);
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .popup-container {
+            width: 95%;
+            margin: 1rem;
+        }
+        
+        .popup-header {
+            padding: 1rem;
+        }
+        
+        .popup-content {
+            padding: 1rem;
+        }
+        
+        .popup-footer {
+            padding: 1rem;
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+    }
+
+    .timer {
+        background: var(--warning-gradient);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .timer.warning {
+        background: var(--danger-gradient);
+        animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    /* Добавим отступ для контента, чтобы он не перекрывался с фиксированной панелью */
+    .question-list {
+        margin-bottom: 0;
+    }
+
+    /* Стили для модального окна */
+    .attempts-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 1050;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .attempts-modal.show {
+        display: flex;
+    }
+
+    .attempts-modal-content {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        box-shadow: var(--card-shadow-hover);
+        animation: modalFadeIn 0.3s ease;
+    }
+
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .attempts-modal-icon {
+        font-size: 4rem;
+        color: #ef4444;
+        margin-bottom: 1rem;
+    }
+
+    .attempts-modal-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 1rem;
+    }
+
+    .attempts-modal-text {
+        font-size: 1.1rem;
+        color: #64748b;
+        margin-bottom: 1.5rem;
+    }
+
+    .attempts-modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .attempts-modal-actions .btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    {% if messages %}
+        {% for message in messages %}
+            {% if 'Вы исчерпали все попытки' in message %}
+                <div class="attempts-modal show">
+                    <div class="attempts-modal-content">
+                        <div class="attempts-modal-icon">
+                            <i class="bi bi-exclamation-circle"></i>
+                        </div>
+                        <h3 class="attempts-modal-title">Достигнут лимит попыток</h3>
+                        <p class="attempts-modal-text">{{ message }}</p>
+                        <div class="attempts-modal-actions">
+                            <a href="{% url 'home' %}" class="btn btn-primary">
+                                <i class="bi bi-house"></i> Вернуться на главную
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <div class="container mt-4">
+        <div class="test-header fade-in">
+            <div class="test-header-content">
+                <div class="test-title">
+                    <h1>{{ test.title }}</h1>
+                    <p>{{ test.description }}</p>
+                </div>
+                {% if user.is_staff %}
+                <div class="test-actions">
+                    <button class="btn {% if test.is_active %}btn-warning{% else %}btn-success{% endif %}" data-test-id="{{ test.id }}" data-action="toggle">
+                        <i class="bi {% if test.is_active %}bi-pause-circle{% else %}bi-play-circle{% endif %}"></i>
+                        <span>{% if test.is_active %}Деактивировать{% else %}Активировать{% endif %}</span>
+                    </button>
+                    <button class="btn btn-danger" data-test-id="{{ test.id }}" data-action="delete">
+                        <i class="bi bi-trash"></i>
+                        <span>Удалить</span>
+                    </button>
+                </div>
+                {% endif %}
+                {% if test.time_limit > 0 %}
+                <div class="timer" id="timer" data-time-limit="{{ test.time_limit }}">
+                    <i class="bi bi-clock"></i>
+                    <span id="time-remaining"></span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="test-info">
+                <div class="info-item">
+                    <i class="bi bi-question-circle"></i>
+                    <span>{{ questions|length }} вопросов</span>
+                </div>
+                <div class="info-item">
+                    <i class="bi bi-clock"></i>
+                    <span>
+                        {% if test.time_limit > 0 %}
+                            Максимальное время: {{ test.time_limit }} мин.
+                        {% else %}
+                            Ограничение по времени отсутствует
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <i class="bi bi-check-circle"></i>
+                    <span>Проходной балл: 60%</span>
+                </div>
+                {% if not user.is_staff %}
+                <div class="info-item">
+                    <i class="bi bi-arrow-repeat"></i>
+                    <span>Осталось попыток: {{ remaining_attempts }} из {{ total_attempts }}</span>
+                </div>
+                {% endif %}
+                <div class="info-item">
+                    <i class="bi bi-repeat"></i>
+                    <span>Попыток: {{ test.max_attempts }}</span>
+                </div>
+                <div class="info-item {% if test.difficulty_level == 'hard' %}text-danger{% elif test.difficulty_level == 'medium' %}text-warning{% else %}text-success{% endif %}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Уровень сложности: {% if test.difficulty_level == 'hard' %}Сложный{% elif test.difficulty_level == 'medium' %}Средний{% else %}Легкий{% endif %}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if user.is_staff %}
+        <div class="action-buttons">
+            <button class="btn-icon" onclick="showAddQuestionModal()">
+                <i class="bi bi-plus-circle"></i>
+                <span>Добавить вопрос</span>
+            </button>
+            <button class="btn-icon" onclick="saveOrder()">
+                <i class="bi bi-save"></i>
+                <span>Сохранить порядок</span>
+            </button>
+        </div>
+
+        <div class="question-list" id="questionList">
+            {% for question in questions %}
+            <div class="question-item" data-question-id="{{ question.id }}">
+                <div class="question-header">
+                    <div class="question-info">
+                        <span class="question-number">Вопрос {{ forloop.counter }}</span>
+                        <span class="question-type">
+                            {% if question.question_type == 'multiple' %}
+                                <i class="bi bi-check2-all"></i> Множественный выбор
+                            {% else %}
+                                <i class="bi bi-text-paragraph"></i> Текстовый ответ
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="question-actions">
+                        <button data-question-id="{{ question.id }}" data-action="preview" title="Предпросмотр">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button data-question-id="{{ question.id }}" data-action="copy" title="Копировать">
+                            <i class="bi bi-files"></i>
+                        </button>
+                        <button data-question-id="{{ question.id }}" data-action="delete" title="Удалить">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="question-content">
+                    <div class="question-text">{{ question.text }}</div>
+                    {% if question.question_type == 'multiple' %}
+                    <div class="question-options">
+                        {% for option in question.options.all %}
+                        <div class="question-option">
+                            <i class="bi {% if option.is_correct %}bi-check-circle-fill text-success{% else %}bi-circle{% endif %}"></i>
+                            <span>{{ option.text }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <form method="post" action="{% url 'test_detail' test.id %}">
+            {% csrf_token %}
+            <div class="question-list">
+                {% for question in questions %}
+                <div class="question-card">
+                    <div class="question-header">
+                        <span class="question-number">Вопрос {{ forloop.counter }}</span>
+                        <span class="question-type">
+                            {% if question.question_type == 'multiple' %}
+                                <i class="bi bi-check2-all"></i> Множественный выбор
+                            {% else %}
+                                <i class="bi bi-text-paragraph"></i> Текстовый ответ
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="question-text">{{ question.text }}</div>
+                    {% if question.image %}
+                    <div class="question-image">
+                        <img src="{{ question.image.url }}" alt="Изображение к вопросу" onclick="showImage(this.src)">
+                    </div>
+                    {% endif %}
+                    {% if question.question_type == 'multiple' %}
+                    <div class="answer-options">
+                        {% for option in question.options.all %}
+                        <div class="answer-option">
+                            <input type="checkbox" name="question_{{ question.id }}" value="{{ option.id }}" id="option_{{ option.id }}">
+                            <label for="option_{{ option.id }}">{{ option.text }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-answer-container">
+                        <input type="text" name="question_{{ question.id }}" class="text-answer" required>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="test-actions">
+                <a href="{% url 'home' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>К списку тестов</span>
+                </a>
+                {% if test.time_limit > 0 %}
+                <div class="timer" id="timer-bottom">
+                    <i class="bi bi-clock"></i>
+                    <span id="time-remaining-bottom"></span>
+                </div>
+                {% endif %}
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i>
+                    <span>Завершить тест</span>
+                </button>
+            </div>
+        </form>
+        {% endif %}
+
+        <!-- Модальное окно для просмотра изображения -->
+        <div class="image-modal" id="imageModal">
+            <div class="modal-content">
+                <button class="close-modal" onclick="closeImageModal()">&times;</button>
+                <img src="" alt="Увеличенное изображение">
+            </div>
+        </div>
+
+        <!-- Модальное окно предварительного просмотра -->
+        <div class="preview-modal" id="previewModal">
+            <div class="preview-content">
+                <button class="preview-close" onclick="closePreview()">&times;</button>
+                <div id="previewContent"></div>
+            </div>
+        </div>
+
+        <!-- Всплывающее окно для добавления вопросов -->
+        <div class="popup-overlay" id="addQuestionModal" style="display: none;">
+            <div class="popup-container">
+                <div class="popup-header">
+                    <h3>
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Добавить новый вопрос
+                    </h3>
+                    <button class="popup-close" onclick="closeAddQuestionModal()">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="popup-content">
+                    <form id="questionForm">
+                        <div class="form-section">
+                            <label for="questionType" class="form-label">
+                                <i class="bi bi-list-check me-2"></i>
+                                Тип вопроса
+                            </label>
+                            <select class="form-select" id="questionType" name="question_type" required>
+                                <option value="text">Текстовый ответ</option>
+                                <option value="multiple">Множественный выбор</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-section">
+                            <label for="questionText" class="form-label">
+                                <i class="bi bi-question-circle me-2"></i>
+                                Текст вопроса
+                            </label>
+                            <textarea class="form-control" id="questionText" name="text" rows="3" required 
+                                    placeholder="Введите текст вопроса..."></textarea>
+                        </div>
+
+                        <div class="form-section">
+                            <label for="questionImage" class="form-label">
+                                <i class="bi bi-image me-2"></i>
+                                Изображение (опционально)
+                            </label>
+                            <div class="file-upload">
+                                <input type="file" class="form-control" id="questionImage" name="image" accept="image/*">
+                                <div class="file-info">
+                                    <i class="bi bi-upload"></i>
+                                    <span>Выберите файл</span>
+                                </div>
+                            </div>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Поддерживаемые форматы: JPG, PNG, GIF. Максимальный размер: 5MB
+                            </div>
+                        </div>
+                        
+                        <div id="textAnswerContainer">
+                            <div class="form-section">
+                                <label for="correctAnswer" class="form-label">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    Правильный ответ
+                                </label>
+                                <input type="text" class="form-control" id="correctAnswer" 
+                                       name="correct_answer" required placeholder="Введите правильный ответ...">
+                            </div>
+                        </div>
+                        
+                        <div id="optionsContainer" style="display: none;">
+                            <label class="form-label">
+                                <i class="bi bi-list-ul me-2"></i>
+                                Варианты ответа
+                            </label>
+                            <div id="optionsList" class="mb-3"></div>
+                            <button type="button" class="btn btn-outline-primary w-100" onclick="addOption()">
+                                <i class="bi bi-plus-circle me-2"></i>
+                                Добавить вариант ответа
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="popup-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddQuestionModal()">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Отмена
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="submitQuestion()">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Добавить вопрос
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализация drag-and-drop
+        const questionList = document.getElementById('questionList');
+        if (questionList) {
+            new Sortable(questionList, {
+                animation: 150,
+                ghostClass: 'dragging',
+                onEnd: function() {
+                    updateQuestionNumbers();
+                }
+            });
+        }
+
+        // Обновление номеров вопросов
+        function updateQuestionNumbers() {
+            const questions = document.querySelectorAll('.question-number');
+            questions.forEach((question, index) => {
+                question.textContent = `Вопрос ${index + 1}`;
+            });
+        }
+
+        // Инициализация таймера
+        const timeLimit = parseInt(document.getElementById('timer')?.dataset.timeLimit || '0');
+        if (timeLimit > 0) {
+            let timeRemaining = timeLimit * 60; // конвертируем минуты в секунды
+            const timerElement = document.getElementById('timer');
+            const timerBottomElement = document.getElementById('timer-bottom');
+            const timeRemainingElement = document.getElementById('time-remaining');
+            const timeRemainingBottomElement = document.getElementById('time-remaining-bottom');
+            const testForm = document.querySelector('form');
+
+            function updateTimer() {
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = timeRemaining % 60;
+                const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                timeRemainingElement.textContent = timeString;
+                timeRemainingBottomElement.textContent = timeString;
+
+                if (timeRemaining <= 60) { // последняя минута
+                    timerElement.classList.add('warning');
+                    timerBottomElement.classList.add('warning');
+                }
+
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    if (testForm) {
+                        testForm.submit(); // автоматически отправляем форму
+                    }
+                }
+            }
+
+            const timerInterval = setInterval(function() {
+                timeRemaining--;
+                updateTimer();
+            }, 1000);
+
+            updateTimer(); // начальное отображение таймера
+        }
+    });
+
+    // Функции для работы с вопросами
+    let optionCounter = 0;
+
+    function showAddQuestionModal() {
+        document.getElementById('addQuestionModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeAddQuestionModal() {
+        document.getElementById('addQuestionModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+        resetForm();
+    }
+
+    function resetForm() {
+        document.getElementById('questionForm').reset();
+        document.getElementById('optionsContainer').style.display = 'none';
+        document.getElementById('optionsList').innerHTML = '';
+        optionCounter = 0;
+    }
+
+    function addOption() {
+        const optionsList = document.getElementById('optionsList');
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'option-item';
+        optionDiv.innerHTML = `
+            <div class="d-flex align-items-center gap-3">
+                <div class="flex-grow-1">
+                    <input type="text" class="form-control" 
+                           name="option_text_${optionCounter}" 
+                           placeholder="Введите вариант ответа" required>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" 
+                           name="option_correct_${optionCounter}" 
+                           id="option_correct_${optionCounter}">
+                    <label class="form-check-label" for="option_correct_${optionCounter}">
+                        Правильный
+                    </label>
+                </div>
+                <button type="button" class="btn-remove-option" 
+                        onclick="this.parentElement.parentElement.remove()">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        `;
+        optionsList.appendChild(optionDiv);
+        optionCounter++;
+    }
+
+    document.getElementById('questionType').addEventListener('change', function() {
+        const optionsContainer = document.getElementById('optionsContainer');
+        const textAnswerContainer = document.getElementById('textAnswerContainer');
+        if (this.value === 'multiple') {
+            optionsContainer.style.display = 'block';
+            textAnswerContainer.style.display = 'none';
+        } else {
+            optionsContainer.style.display = 'none';
+            textAnswerContainer.style.display = 'block';
+        }
+    });
+
+    function submitQuestion() {
+        const form = document.getElementById('questionForm');
+        const formData = new FormData(form);
+        const data = {
+            text: formData.get('text'),
+            question_type: formData.get('question_type'),
+            options: []
+        };
+
+        // Добавляем правильный ответ для текстовых вопросов
+        if (data.question_type === 'text') {
+            data.correct_answer = formData.get('correct_answer');
+        } else {
+            let i = 0;
+            while (true) {
+                const optionText = formData.get(`option_text_${i}`);
+                if (!optionText) break;
+                
+                data.options.push({
+                    text: optionText,
+                    is_correct: formData.get(`option_correct_${i}`) === 'on'
+                });
+                i++;
+            }
+        }
+
+        // Создаем новый FormData для отправки файла
+        const fileData = new FormData();
+        fileData.append('text', data.text);
+        fileData.append('question_type', data.question_type);
+        
+        if (data.question_type === 'text') {
+            fileData.append('correct_answer', data.correct_answer);
+        } else {
+            data.options.forEach((option, index) => {
+                fileData.append(`option_text_${index}`, option.text);
+                fileData.append(`option_correct_${index}`, option.is_correct);
+            });
+        }
+
+        // Добавляем файл изображения, если он есть
+        const imageFile = document.getElementById('questionImage').files[0];
+        if (imageFile) {
+            fileData.append('image', imageFile);
+        }
+
+        console.log('Sending data:', data);
+
+        fetch(`/test/{{ test.id }}/add-question/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: fileData
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            if (data.success) {
+                closeAddQuestionModal();
+                location.reload();
+            } else {
+                alert(data.error || 'Произошла ошибка при добавлении вопроса');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при добавлении вопроса');
+        });
+    }
+
+    function saveOrder() {
+        const questions = Array.from(document.querySelectorAll('.question-item')).map(item => ({
+            id: item.dataset.questionId,
+            order: Array.from(item.parentNode.children).indexOf(item)
+        }));
+
+        fetch('/api/questions/reorder/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ questions })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Порядок вопросов сохранен');
+            } else {
+                alert('Ошибка при сохранении порядка');
+            }
+        });
+    }
+
+    function previewQuestion(questionId) {
+        fetch(`/api/questions/${questionId}/preview/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('previewContent').innerHTML = data.html;
+                document.getElementById('previewModal').classList.add('active');
+            });
+    }
+
+    function copyQuestion(questionId) {
+        if (confirm('Создать копию этого вопроса?')) {
+            fetch(`/api/questions/${questionId}/copy/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Ошибка при копировании вопроса');
+                }
+            });
+        }
+    }
+
+    function deleteQuestion(questionId) {
+        if (confirm('Удалить этот вопрос?')) {
+            fetch(`/api/questions/${questionId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.querySelector(`[data-question-id="${questionId}"]`).remove();
+                    updateQuestionNumbers();
+                } else {
+                    alert('Ошибка при удалении вопроса');
+                }
+            });
+        }
+    }
+
+    function closePreview() {
+        document.getElementById('previewModal').classList.remove('active');
+    }
+
+    function toggleTestStatus(testId) {
+        if (confirm('Вы уверены, что хотите изменить статус теста?')) {
+            fetch(`/test/${testId}/toggle/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Ошибка при изменении статуса теста');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при изменении статуса теста');
+            });
+        }
+    }
+
+    function deleteTest(testId) {
+        if (confirm('Вы уверены, что хотите удалить этот тест? Это действие нельзя отменить.')) {
+            fetch(`/test/${testId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/';
+                } else {
+                    alert('Ошибка при удалении теста');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при удалении теста');
+            });
+        }
+    }
+
+    // Вспомогательная функция для получения CSRF токена
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Функции для работы с изображениями
+    function showImage(src) {
+        const modal = document.getElementById('imageModal');
+        const img = modal.querySelector('img');
+        img.src = src;
+        modal.classList.add('active');
+    }
+
+    function closeImageModal() {
+        document.getElementById('imageModal').classList.remove('active');
+    }
+
+    // Обновление прогресс-бара (только для пользователей)
+    function updateProgress() {
+        const totalQuestions = document.querySelectorAll('.question-card').length;
+        const answeredQuestions = document.querySelectorAll('input:checked, .text-answer:not(:empty)').length;
+        const progress = (answeredQuestions / totalQuestions) * 100;
+        document.querySelector('.progress-bar').style.width = `${progress}%`;
+    }
+
+    // Добавляем обработчики для обновления прогресс-бара
+    document.querySelectorAll('input[type="radio"], .text-answer').forEach(element => {
+        element.addEventListener('change', updateProgress);
+        element.addEventListener('input', updateProgress);
+    });
+
+    // Инициализация прогресс-бара
+    if (document.querySelector('.progress-bar')) {
+        updateProgress();
+    }
+
+    // Добавляем обработчик для отладки
+    document.getElementById('questionForm').addEventListener('submit', function(e) {
+        console.log('Form submitted');
+        const formData = new FormData(this);
+        for (let [key, value] of formData.entries()) {
+            console.log(key, value);
+        }
+    });
+
+    // Обработчики для кнопок теста
+    document.querySelectorAll('[data-test-id]').forEach(button => {
+        button.addEventListener('click', function() {
+            const testId = this.dataset.testId;
+            const action = this.dataset.action;
+            
+            if (action === 'toggle') {
+                toggleTestStatus(testId);
+            } else if (action === 'delete') {
+                deleteTest(testId);
+            }
+        });
+    });
+
+    // Обработчики для кнопок вопросов
+    document.querySelectorAll('[data-question-id]').forEach(button => {
+        button.addEventListener('click', function() {
+            const questionId = this.dataset.questionId;
+            const action = this.dataset.action;
+            
+            if (action === 'preview') {
+                previewQuestion(questionId);
+            } else if (action === 'copy') {
+                copyQuestion(questionId);
+            } else if (action === 'delete') {
+                deleteQuestion(questionId);
+            }
+        });
+    });
+    </script>
+{% endblock %} 
