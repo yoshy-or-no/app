@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-nxphprlw_uue4lo!j(mi03#hqn&6wad^c4*)cs(5&$0%gyvm=8'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['Apply.pythonanywhere.com']
 
 
 # Application definition
@@ -132,15 +132,10 @@ LOGIN_URL = 'login'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# HTTPS settings
-if not DEBUG:  # Включаем SSL только в production
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-else:  # В режиме разработки отключаем SSL
-    SECURE_SSL_REDIRECT = False
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
+# Security settings
+SECURE_SSL_REDIRECT = False  # Отключаем SSL для PythonAnywhere
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
 
 # Development performance settings
 if DEBUG:
